@@ -26,7 +26,9 @@ public class SecurityConfig {
 		http.formLogin(login -> login.disable());
 		http.httpBasic(basic -> basic.disable());
 		http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
-		http.authorizeHttpRequests(auth -> auth.requestMatchers("/**").hasRole("ADMIN"));
+		http.authorizeHttpRequests(auth -> auth
+				.requestMatchers("/register/**").permitAll()
+				.anyRequest().hasRole("ADMIN"));
 		http.addFilter(new JWTAuthenticationFilter(authenticationConfiguration.getAuthenticationManager()));
 		http.addFilterBefore(new JWTAuthorizationFilter(memberRepository), AuthorizationFilter.class);
 		return http.build();
