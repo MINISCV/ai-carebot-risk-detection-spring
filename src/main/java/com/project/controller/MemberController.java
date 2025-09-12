@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class MemberController {
 	private final MemberService memberService;
+	
 	@PostMapping("/register")
 	public ResponseEntity<String> register(@RequestBody Member member) {
 		try {
