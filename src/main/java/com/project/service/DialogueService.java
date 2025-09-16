@@ -21,4 +21,8 @@ public class DialogueService {
         	dialogueRepository.upsert(dialogue);
         return dialogues.size();
     }
+
+	public List<Dialogue> findDialogueByDollId(String dollId) {
+		return dialogueRepository.findByDollIdOrderByUtteredAtAsc(dollId);
+	}
 }

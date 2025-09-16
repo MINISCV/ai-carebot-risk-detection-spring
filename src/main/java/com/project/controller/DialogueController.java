@@ -1,11 +1,16 @@
 package com.project.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.project.domain.Dialogue;
 import com.project.service.DialogueService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,6 +31,22 @@ public class DialogueController {
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body(null);
+        }
+    }
+    
+    @GetMapping("/getAll/{dollId}")
+    public ResponseEntity<?> getAllById(@PathVariable String dollId) {
+        if (dollId == null)
+            return ResponseEntity.badRequest().body("Id가 없습니다.");
+        try {
+            List<Dialogue> dialogues = dialogueService.findDialogueByDollId(dollId);
+            if (dialogues.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(dialogues);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError().body("서버 오류가 발생했습니다.");
         }
     }
 }
