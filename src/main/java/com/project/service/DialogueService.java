@@ -17,7 +17,8 @@ public class DialogueService {
 	
 	public int saveDialogues(MultipartFile file) throws Exception {
         List<Dialogue> dialogues = Dialogue.parseSimpleCsv(file);
-        dialogueRepository.saveAll(dialogues);
+        for (Dialogue dialogue : dialogues)  
+        	dialogueRepository.upsert(dialogue);
         return dialogues.size();
     }
 }

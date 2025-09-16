@@ -19,6 +19,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,6 +35,12 @@ import lombok.ToString;
 @Builder
 @AllArgsConstructor
 @RequiredArgsConstructor
+@Table(uniqueConstraints = {
+	    @UniqueConstraint(
+	        name = "doll_uttered_at_unique",
+	        columnNames = {"dollId", "utteredAt"}
+	    )
+	})
 public class Dialogue {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,7 +56,7 @@ public class Dialogue {
         List<Dialogue> dialogues = new ArrayList<>();
     	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:ss");
         Pattern pattern = Pattern.compile("(?<=\")[^\"]*(?=\"(,|$))|[^,]+");
-    	try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream(), "EUC-KR"))) {
+    	try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
 			br.readLine();
 			String line;
 			while ((line = br.readLine()) != null) {
