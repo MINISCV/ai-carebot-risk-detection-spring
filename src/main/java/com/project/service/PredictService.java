@@ -76,7 +76,6 @@ public class PredictService {
 			dialogue.setAnalysisResult(savedAnalysisResult);
 			if (dialogueDto.getIndividualResult() != null) {
 				dialogue.setIndividualRiskLevel(dialogueDto.getIndividualResult().getRiskLevel());
-				System.out.println(dialogue.getIndividualRiskLevel().name());
 				Map<String, Double> individualScores = dialogueDto.getIndividualResult().getConfidenceScores();
 				if (individualScores != null) {
 					dialogue.setIndividualPositiveScore(individualScores.get("positive"));
