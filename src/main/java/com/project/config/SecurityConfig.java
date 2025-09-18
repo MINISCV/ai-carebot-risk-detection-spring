@@ -32,7 +32,7 @@ public class SecurityConfig {
 		http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.cors(cors->cors.configurationSource(corsSource()));
 		http.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/register/**").permitAll()
+				.requestMatchers("/register", "/refresh").permitAll()
 				.anyRequest().hasRole("ADMIN"));
 		http.addFilter(new JWTAuthenticationFilter(authenticationConfiguration.getAuthenticationManager()));
 		http.addFilterBefore(new JWTAuthorizationFilter(memberRepository), AuthorizationFilter.class);

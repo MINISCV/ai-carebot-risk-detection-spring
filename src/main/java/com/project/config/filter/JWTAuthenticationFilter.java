@@ -17,6 +17,7 @@ import com.project.util.JWTUtil;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -37,8 +38,8 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 					member.getPassword());
 			return authenticationManager.authenticate(authToken);
 		} catch (Exception e) {
-			log.info(e.getMessage()); // 예외 발생 로그 출력
-			response.setStatus(HttpStatus.UNAUTHORIZED.value()); // 자격 증명에 실패하면 응답코드 리턴
+			log.info(e.getMessage());
+			response.setStatus(HttpStatus.UNAUTHORIZED.value());
 		}
 		return null;
 	}
@@ -48,8 +49,14 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 			Authentication authResult) throws IOException, ServletException {
 		User user = (User) authResult.getPrincipal();
 		System.out.println("auth:" + user);
-		String token = JWTUtil.getJWT(user.getUsername());
-		response.addHeader(HttpHeaders.AUTHORIZATION, token);
+		String accessToken = JWTUtil.getJWT(user.getUsername());
+		response.addHeader(HttpHeaders.AUTHORIZATION, accessToken);
+		String refreshToken = JWTUtil.getRefreshJWT(user.getUsername());
+		Cookie cookie = new Cookie("refresh_token", refreshToken);
+		cookie.setHttpOnly(true);
+		cookie.setPath("/");
+		cookie.setMaxAge(60 * 60 * 24 * 7);
+		response.addCookie(cookie);
 		response.setStatus(HttpStatus.OK.value());
 
 	}

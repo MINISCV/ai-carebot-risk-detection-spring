@@ -16,14 +16,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PredictController {
     private final PredictService predictService;
-
+    
     @PostMapping("/sentiment")
     public ResponseEntity<String> handleCsvUpload(MultipartFile file) {
         if (file == null || file.isEmpty())
             return ResponseEntity.badRequest().body("업로드된 파일이 없습니다.");
         try {
-            String fastApiResponse = predictService.sendToFastApi(file);
-            return ResponseEntity.ok(fastApiResponse);
+            Long saveId = predictService.sendToFastApi(file);
+            // 프론트에서 요구하는거 반환하는걸로
+            return ResponseEntity.ok("저장완료 " + saveId);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)

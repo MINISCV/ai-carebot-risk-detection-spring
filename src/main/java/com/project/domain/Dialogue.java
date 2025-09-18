@@ -16,9 +16,14 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
@@ -31,14 +36,14 @@ import lombok.ToString;
 @Entity
 @Getter
 @Setter
-@ToString
 @Builder
+@ToString
 @AllArgsConstructor
 @RequiredArgsConstructor
 @Table(uniqueConstraints = {
 	    @UniqueConstraint(
-	        name = "doll_uttered_at_unique",
-	        columnNames = {"dollId", "utteredAt"}
+	        name = "doll_uttered_at_text_unique",
+	        columnNames = {"dollId", "text", "utteredAt"}
 	    )
 	})
 public class Dialogue {
@@ -46,15 +51,29 @@ public class Dialogue {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String dollId;
-	@Column(length = 2000)
+	@Column(length = 200)
 	private String text;
 	@JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
 	private LocalDateTime utteredAt;
+    @Enumerated(EnumType.STRING)
+    private Risk individualRiskLevel;
+    @Column(name = "individual_positive_score")
+    private Double individualPositiveScore;
+    @Column(name = "individual_danger_score")
+    private Double individualDangerScore;
+    @Column(name = "individual_critical_score")
+    private Double individualCriticalScore;
+    @Column(name = "individual_emergency_score")
+    private Double individualEmergencyScore;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "analysis_result_id")
+    @ToString.Exclude
+    private AnalysisResult analysisResult;
 	
     static public List<Dialogue> parseSimpleCsv(MultipartFile file) throws Exception {
     	final int FIELD_COUNT = 3;
         List<Dialogue> dialogues = new ArrayList<>();
-    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:ss");
+    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm");
         Pattern pattern = Pattern.compile("(?<=\")[^\"]*(?=\"(,|$))|[^,]+");
     	try (BufferedReader br = new BufferedReader(new InputStreamReader(file.getInputStream()))) {
 			br.readLine();
