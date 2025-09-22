@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,7 +42,7 @@ public class MemberController {
 					.toUri();
 			return ResponseEntity.created(location).body(responseDto);
 		} catch (IllegalArgumentException e) {
-			return ResponseEntity.badRequest().build();
+			return ResponseEntity.status(HttpStatus.CONFLICT).body("이미 존재하는 username 입니다.");
 		} catch (Exception e) {
 			return ResponseEntity.internalServerError().body("회원가입 중 오류가 발생했습니다.");
 		}
