@@ -2,5 +2,5 @@ package com.project.dto;
 
 import java.util.List;
 
-public record ReasonDto(List<String> evidence, String summary) {
+public record ReasonDto(List<EvidenceDto> evidence, String summary) {
 }
