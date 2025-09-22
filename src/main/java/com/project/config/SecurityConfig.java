@@ -3,6 +3,7 @@ package com.project.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -39,7 +40,8 @@ public class SecurityConfig {
 		http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.cors(cors->cors.configurationSource(corsSource()));
 		http.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/api/register", "/api/refresh", "/api/login").permitAll()
+				.requestMatchers(HttpMethod.POST, "/api/members").permitAll()
+                .requestMatchers("/api/login", "/api/refresh").permitAll()
 				.anyRequest().hasRole("ADMIN"));
         JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter(
                 authenticationConfiguration.getAuthenticationManager()
