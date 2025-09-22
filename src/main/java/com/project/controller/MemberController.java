@@ -5,7 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.project.domain.Member;
+import com.project.dto.MemberDto;
 import com.project.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
@@ -15,10 +15,10 @@ import lombok.RequiredArgsConstructor;
 public class MemberController {
 	private final MemberService memberService;
 	
-	@PostMapping("/register")
-	public ResponseEntity<String> register(@RequestBody Member member) {
+	@PostMapping("/api/register")
+	public ResponseEntity<String> register(@RequestBody MemberDto memberDto) {
 		try {
-			memberService.register(member);
+			memberService.register(memberDto);
 			return ResponseEntity.ok("회원가입 완료");
 		} catch (IllegalArgumentException e) {
 			return ResponseEntity.badRequest().body(e.getMessage());
