@@ -19,7 +19,7 @@ import com.project.service.DollService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/doll")
+@RequestMapping("/api/dolls")
 @RequiredArgsConstructor
 public class DollController {
 	private final DollService dollService;
@@ -27,7 +27,7 @@ public class DollController {
     @PostMapping
     public ResponseEntity<Doll> createDoll(@RequestBody DollDto dollDto) {
     	Doll doll = dollService.createDoll(dollDto);
-        URI location = URI.create("/api/doll/" + doll.getId());
+        URI location = URI.create("/api/dolls/" + doll.getId());
         return ResponseEntity.created(location).body(doll);
     }
 

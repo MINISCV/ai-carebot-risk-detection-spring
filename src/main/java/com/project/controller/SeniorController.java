@@ -20,7 +20,7 @@ import com.project.service.SeniorService;
 import lombok.RequiredArgsConstructor;
 
 @RestController
-@RequestMapping("/api/senior")
+@RequestMapping("/api/seniors")
 @RequiredArgsConstructor
 public class SeniorController {
     private final SeniorService seniorService;
@@ -28,7 +28,7 @@ public class SeniorController {
     @PostMapping
     public ResponseEntity<Senior> createSenior(@RequestBody SeniorDto seniorDto) {
         Senior createdSenior = seniorService.createSenior(seniorDto);
-        URI location = URI.create("/api/senior/" + createdSenior.getId());
+        URI location = URI.create("/api/seniors/" + createdSenior.getId());
         return ResponseEntity.created(location).body(createdSenior);
     }
 
