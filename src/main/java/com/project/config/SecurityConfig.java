@@ -7,7 +7,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -32,10 +32,14 @@ public class SecurityConfig {
 		http.sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.cors(cors->cors.configurationSource(corsSource()));
 		http.authorizeHttpRequests(auth -> auth
-				.requestMatchers("/register", "/refresh").permitAll()
+				.requestMatchers("/api/register", "/api/refresh", "/api/login").permitAll()
 				.anyRequest().hasRole("ADMIN"));
-		http.addFilter(new JWTAuthenticationFilter(authenticationConfiguration.getAuthenticationManager()));
-		http.addFilterBefore(new JWTAuthorizationFilter(memberRepository), AuthorizationFilter.class);
+        JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter(
+                authenticationConfiguration.getAuthenticationManager()
+            );
+        jwtAuthenticationFilter.setFilterProcessesUrl("/api/login");
+		http.addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+		http.addFilterBefore(new JWTAuthorizationFilter(memberRepository), JWTAuthenticationFilter.class);
 		return http.build();
 	}
 
