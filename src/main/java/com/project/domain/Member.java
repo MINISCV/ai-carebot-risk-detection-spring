@@ -1,5 +1,7 @@
 package com.project.domain;
 
+import com.project.dto.MemberResponseDto;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -29,5 +31,11 @@ public class Member {
         this.password = password;
         this.role = role;
         this.enabled = enabled;
+    }
+	
+	public void update(MemberResponseDto dto) {
+        this.username = dto.username();
+        this.role = dto.role();
+        this.enabled = dto.enabled();
     }
 }
