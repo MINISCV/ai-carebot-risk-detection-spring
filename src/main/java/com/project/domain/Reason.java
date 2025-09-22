@@ -8,6 +8,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,6 +23,7 @@ public class Reason {
     @Column(name = "reason_text")
     private List<String> reasons = new ArrayList<>();
     
+    @Lob
     private String summary;
     
     @Builder
