@@ -2,7 +2,7 @@ package com.project.domain;
 
 import java.time.LocalDate;
 
-import com.project.dto.SeniorDto;
+import com.project.dto.SeniorRequestDto;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -74,7 +74,7 @@ public class Senior {
         this.medications = medications;
     }
     
-    public void update(SeniorDto dto) {
+    public void update(SeniorRequestDto dto) {
         this.name = dto.name();
         this.birthDate = dto.birthDate();
         this.sex = dto.sex();

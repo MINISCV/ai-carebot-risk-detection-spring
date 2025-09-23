@@ -1,13 +1,14 @@
 package com.project.service;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.project.domain.Doll;
-import com.project.dto.DollDto;
+import com.project.dto.DollRequestDto;
+import com.project.dto.DollResponseDto;
 import com.project.persistence.DollRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -19,7 +20,7 @@ public class DollService {
 	private final DollRepository dollRepository;
 	
 	@Transactional
-	public Doll createDoll(DollDto dollDto) {
+	public Doll createDoll(DollRequestDto dollDto) {
 		if (dollRepository.existsById(dollDto.id()))
 			throw new IllegalArgumentException("이미 존재하는 인형 Id입니다.");
 
@@ -31,13 +32,17 @@ public class DollService {
 	}
 
     @Transactional(readOnly = true)
-    public Optional<Doll> getDollById(String id) {
-        return dollRepository.findById(id);
+    public DollResponseDto getDollById(String id) {
+        Doll doll = dollRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("인형을 찾을 수 없습니다: " + id));
+        return DollResponseDto.from(doll);
     }
 
     @Transactional(readOnly = true)
-    public List<Doll> getAllDolls() {
-        return dollRepository.findAll();
+    public List<DollResponseDto> getAllDolls() {
+        return dollRepository.findAll().stream()
+                .map(DollResponseDto::from)
+                .collect(Collectors.toList());
     }
 
     @Transactional

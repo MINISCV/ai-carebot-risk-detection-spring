@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.domain.Doll;
-import com.project.dto.DollDto;
+import com.project.dto.DollRequestDto;
+import com.project.dto.DollResponseDto;
 import com.project.service.DollService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -25,23 +27,22 @@ public class DollController {
 	private final DollService dollService;
 
     @PostMapping
-    public ResponseEntity<Doll> createDoll(@RequestBody DollDto dollDto) {
+    public ResponseEntity<Doll> createDoll(@Valid @RequestBody DollRequestDto dollDto) {
     	Doll doll = dollService.createDoll(dollDto);
         URI location = URI.create("/api/dolls/" + doll.getId());
         return ResponseEntity.created(location).body(doll);
     }
 
     @GetMapping
-    public ResponseEntity<List<Doll>> getAllDolls() {
-        List<Doll> dolls = dollService.getAllDolls();
+    public ResponseEntity<List<DollResponseDto>> getAllDolls() {
+        List<DollResponseDto> dolls = dollService.getAllDolls();
         return ResponseEntity.ok(dolls);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Doll> getDollById(@PathVariable String id) {
-        return dollService.getDollById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<DollResponseDto> getDollById(@PathVariable String id) {
+        DollResponseDto doll = dollService.getDollById(id);
+        return ResponseEntity.ok(doll);
     }
 
     @DeleteMapping("/{id}")

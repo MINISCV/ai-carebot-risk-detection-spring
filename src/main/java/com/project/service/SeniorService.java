@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.project.domain.Doll;
 import com.project.domain.Senior;
-import com.project.dto.SeniorDto;
+import com.project.dto.SeniorRequestDto;
 import com.project.persistence.DollRepository;
 import com.project.persistence.SeniorRepository;
 
@@ -22,7 +22,7 @@ public class SeniorService {
 	private final DollRepository dollRepository;
 
 	@Transactional
-	public Senior createSenior(SeniorDto seniorDto) {
+	public Senior createSenior(SeniorRequestDto seniorDto) {
 		Doll doll = dollRepository.findById(seniorDto.dollId())
 				.orElseThrow(() -> new EntityNotFoundException("인형 " + seniorDto.dollId() + " 없음."));
 
@@ -60,7 +60,7 @@ public class SeniorService {
 	}
 
 	@Transactional
-	public Senior updateSenior(Long id, SeniorDto seniorDto) {
+	public Senior updateSenior(Long id, SeniorRequestDto seniorDto) {
 		Senior existingSenior = seniorRepository.findById(id)
 				.orElseThrow(() -> new EntityNotFoundException("시니어 " + id + "는 없음."));
 

@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.project.domain.Senior;
-import com.project.dto.SeniorDto;
+import com.project.dto.SeniorRequestDto;
 import com.project.service.SeniorService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,7 +26,7 @@ public class SeniorController {
     private final SeniorService seniorService;
 
     @PostMapping
-    public ResponseEntity<Senior> createSenior(@RequestBody SeniorDto seniorDto) {
+    public ResponseEntity<Senior> createSenior(@RequestBody SeniorRequestDto seniorDto) {
         Senior createdSenior = seniorService.createSenior(seniorDto);
         URI location = URI.create("/api/seniors/" + createdSenior.getId());
         return ResponseEntity.created(location).body(createdSenior);
@@ -46,7 +46,7 @@ public class SeniorController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Senior> updateSenior(@PathVariable Long id, @RequestBody SeniorDto seniorDto) {
+    public ResponseEntity<Senior> updateSenior(@PathVariable Long id, @RequestBody SeniorRequestDto seniorDto) {
         Senior updatedSenior = seniorService.updateSenior(id, seniorDto);
         return ResponseEntity.ok(updatedSenior);
     }
