@@ -20,8 +20,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
+@Slf4j
 public class JWTAuthorizationFilter extends OncePerRequestFilter {
 	private final MemberRepository memberRepository;
 
@@ -34,17 +36,22 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 			return;
 		}
 		String jwtToken = srcToken.replace("Bearer ", "");
-		String username = JWTUtil.getClaim(jwtToken);
-		Optional<Member> opt = memberRepository.findById(username);
-		if (!opt.isPresent()) {
-			filterChain.doFilter(request, response);
-			return;
+
+		try {
+			String username = JWTUtil.getClaim(jwtToken);
+			Optional<Member> opt = memberRepository.findById(username);
+			if (!opt.isPresent()) {
+				filterChain.doFilter(request, response);
+				return;
+			}
+			Member findmember = opt.get();
+			User user = new User(findmember.getUsername(), findmember.getPassword(),
+					AuthorityUtils.createAuthorityList(findmember.getRole().toString()));
+			Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+			SecurityContextHolder.getContext().setAuthentication(auth);
+		} catch (Exception e) {
+			log.error("JWT 토큰 검증 중 오류 발생: {}", e.getMessage());
 		}
-		Member findmember = opt.get();
-		User user = new User(findmember.getUsername(), findmember.getPassword(),
-				AuthorityUtils.createAuthorityList(findmember.getRole().toString()));
-		Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
-		SecurityContextHolder.getContext().setAuthentication(auth);
 		filterChain.doFilter(request, response);
 	}
 }
