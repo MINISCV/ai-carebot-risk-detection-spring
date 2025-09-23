@@ -48,7 +48,6 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 	protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain,
 			Authentication authResult) throws IOException, ServletException {
 		User user = (User) authResult.getPrincipal();
-		System.out.println("auth:" + user);
 		String accessToken = JWTUtil.getJWT(user.getUsername());
 		response.addHeader(HttpHeaders.AUTHORIZATION, accessToken);
 		String refreshToken = JWTUtil.getRefreshJWT(user.getUsername());
