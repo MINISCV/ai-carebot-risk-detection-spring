@@ -11,7 +11,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.project.domain.Member;
+import com.project.domain.member.Member;
 import com.project.persistence.MemberRepository;
 import com.project.util.JWTUtil;
 

@@ -10,10 +10,21 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
+
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
+    @ExceptionHandler(JWTVerificationException.class)
+    public ResponseEntity<Map<String, String>> handleJWTVerificationException(JWTVerificationException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage()); 
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
+	
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
         Map<String, String> errors = new HashMap<>();
@@ -44,5 +55,20 @@ public class GlobalExceptionHandler {
         Map<String, String> error = new HashMap<>();
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+    
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<Map<String, String>> handleIllegalStateException(IllegalStateException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
+    }
+    
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleAllUncaughtException(Exception ex) {
+        log.error("처리못한 예외 발생: ", ex); 
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "서버 내부 오류가 발생했습니다. 관리자에게 문의하세요.");
+        return ResponseEntity.internalServerError().body(error);
     }
 }
