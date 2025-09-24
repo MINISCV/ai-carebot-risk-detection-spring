@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class SecurityConfig {
 	private final AuthenticationConfiguration authenticationConfiguration;
+	private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
 	private final MemberRepository memberRepository;
 	private final ObjectMapper objectMapper;
 	
@@ -44,11 +45,15 @@ public class SecurityConfig {
 		http.authorizeHttpRequests(auth -> auth
 				.requestMatchers(HttpMethod.POST, "/api/members").permitAll()
                 .requestMatchers("/api/login", "/api/refresh").permitAll()
-				.anyRequest().hasRole("ADMIN"));
+				.anyRequest().hasRole("ADMIN")
+				);
         JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter(
                 authenticationConfiguration.getAuthenticationManager(),
                 objectMapper
-            );
+        		);
+        http.exceptionHandling(exceptions -> exceptions
+        		.authenticationEntryPoint(customAuthenticationEntryPoint)
+        		);
         jwtAuthenticationFilter.setFilterProcessesUrl("/api/login");
 		http.addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 		http.addFilterBefore(new JWTAuthorizationFilter(memberRepository), JWTAuthenticationFilter.class);
