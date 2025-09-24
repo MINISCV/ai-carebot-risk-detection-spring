@@ -30,6 +30,7 @@ import com.project.dto.request.DialogueAnalysisRequestDto;
 import com.project.dto.response.AnalysisResponseDto;
 import com.project.dto.response.DialogueAnalysisResponseDto;
 import com.project.dto.response.OverallResultResponseDto;
+import com.project.exception.InvalidFileException;
 import com.project.persistence.DollRepository;
 import com.project.persistence.OverallResultRepository;
 
@@ -51,7 +52,7 @@ public class AnalyzeService {
     @Transactional
     public AnalysisResponseDto analyzeAndSave(MultipartFile file) {
         if (file == null || file.isEmpty())
-            throw new IllegalArgumentException("파일이 없거나 비어있습니다.");
+            throw new InvalidFileException("파일이 없거나 비어있습니다.");
         List<DialogueAnalysisRequestDto> reqeustDialogues = new ArrayList<>();
 
         DateTimeFormatter csvFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:ss");
@@ -71,9 +72,9 @@ public class AnalyzeService {
                 reqeustDialogues.add(new DialogueAnalysisRequestDto(dollId, text, dateTime));
             }
         } catch (CsvValidationException e) {
-            throw new IllegalArgumentException("잘못된 형식의 CSV 파일입니다.", e);
+            throw new InvalidFileException("잘못된 형식의 CSV 파일입니다.", e);
         } catch (IOException e) {
-            throw new IllegalArgumentException("파일을 읽는 중 오류가 발생했습니다.", e);
+            throw new InvalidFileException("파일을 읽는 중 오류가 발생했습니다.", e);
         }
         
         HttpHeaders headers = new HttpHeaders();
