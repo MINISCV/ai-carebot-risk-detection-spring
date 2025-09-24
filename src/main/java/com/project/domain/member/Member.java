@@ -1,6 +1,4 @@
-package com.project.domain;
-
-import com.project.dto.MemberResponseDto;
+package com.project.domain.member;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -33,9 +31,8 @@ public class Member {
         this.enabled = enabled;
     }
 	
-	public void update(MemberResponseDto dto) {
-        this.username = dto.username();
-        this.role = dto.role();
-        this.enabled = dto.enabled();
+	public void update(Role role, boolean enabled) {
+        this.role = role;
+        this.enabled = enabled;
     }
 }

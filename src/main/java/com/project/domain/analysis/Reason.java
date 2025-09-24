@@ -1,4 +1,4 @@
-package com.project.domain;
+package com.project.domain.analysis;
 
 import java.util.ArrayList;
 import java.util.List;

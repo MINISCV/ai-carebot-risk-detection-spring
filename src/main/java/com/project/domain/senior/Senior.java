@@ -1,10 +1,9 @@
-package com.project.domain;
+package com.project.domain.senior;
 
 import java.time.LocalDate;
 
-import com.project.dto.SeniorRequestDto;
-
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -24,7 +23,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Senior {
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY )
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
 	@OneToOne(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -44,58 +43,47 @@ public class Senior {
 	
 	private String note;
     
-	private String guardianName;
+	@Embedded
+	private Guardian guardian;
 	
-	private String guardianPhone;
-    
-	private String relationship;
-	
-    private String guardianNote;
-    
-    private String diseases;
-    
-    private String medications;
-    
+	@Embedded
+	private MedicalInfo medicalInfo;
+        
     @Builder
     public Senior(String name, LocalDate birthDate, Sex sex, String phone, 
-                  String address, String note, String guardianName, String guardianPhone, 
-                  String relationship, String guardianNote, String diseases, String medications) {
+                  String address, String note, Guardian guardian, MedicalInfo medicalInfo) {
         this.name = name;
         this.birthDate = birthDate;
         this.sex = sex;
         this.phone = phone;
         this.address = address;
         this.note = note;
-        this.guardianName = guardianName;
-        this.guardianPhone = guardianPhone;
-        this.relationship = relationship;
-        this.guardianNote = guardianNote;
-        this.diseases = diseases;
-        this.medications = medications;
+        this.guardian = guardian;
+        this.medicalInfo = medicalInfo;
     }
     
-    public void update(SeniorRequestDto dto) {
-        this.name = dto.name();
-        this.birthDate = dto.birthDate();
-        this.sex = dto.sex();
-        this.phone = dto.phone();
-        this.address = dto.address();
-        this.note = dto.note();
-        this.guardianName = dto.guardianName();
-        this.guardianPhone = dto.guardianPhone();
-        this.relationship = dto.relationship();
-        this.guardianNote = dto.guardianNote();
-        this.diseases = dto.diseases();
-        this.medications = dto.medications();
+    public void updatePersonalInfo(String name, LocalDate birthDate, Sex sex, String phone, String address, String note) {
+        this.name = name;
+        this.birthDate = birthDate;
+        this.sex = sex;
+        this.phone = phone;
+        this.address = address;
+        this.note = note;
+    }
+
+    public void updateGuardianInfo(Guardian guardian) {
+        this.guardian = guardian;
+    }
+
+    public void updateMedicalInfo(MedicalInfo medicalInfo) {
+        this.medicalInfo = medicalInfo;
     }
     
     public void changeDoll(Doll newDoll) {
-        if (this.doll != null) {
+        if (this.doll != null)
             this.doll.setSenior(null);
-        }
         this.doll = newDoll;
-        if (newDoll != null) {
+        if (newDoll != null)
             newDoll.setSenior(this);
-        }
     }
 }

@@ -1,10 +1,12 @@
-package com.project.domain;
+package com.project.domain.analysis;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.annotations.CreationTimestamp;
+
+import com.project.domain.senior.Doll;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embedded;

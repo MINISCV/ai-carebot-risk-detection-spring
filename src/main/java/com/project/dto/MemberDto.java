@@ -1,14 +1,14 @@
 package com.project.dto;
 
-import com.project.domain.Member;
-import com.project.domain.Role;
+import com.project.domain.member.Member;
+import com.project.domain.member.Role;
 
-public record MemberResponseDto(
+public record MemberDto(
         String username,
         Role role,
         boolean enabled
 ) {
-    public MemberResponseDto(Member member) {
+    public MemberDto(Member member) {
         this(
             member.getUsername(),
             member.getRole(),

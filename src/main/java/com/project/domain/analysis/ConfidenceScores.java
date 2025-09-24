@@ -1,4 +1,4 @@
-package com.project.domain;
+package com.project.domain.analysis;
 
 import jakarta.persistence.Embeddable;
 import lombok.AccessLevel;

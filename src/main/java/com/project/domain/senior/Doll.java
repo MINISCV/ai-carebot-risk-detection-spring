@@ -1,7 +1,9 @@
-package com.project.domain;
+package com.project.domain.senior;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import com.project.domain.analysis.OverallResult;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
