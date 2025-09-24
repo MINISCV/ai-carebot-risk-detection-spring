@@ -6,9 +6,11 @@ import java.util.Map;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 
@@ -18,10 +20,26 @@ import lombok.extern.slf4j.Slf4j;
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNoResourceFoundException(NoResourceFoundException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "요청하신 페이지 또는 리소스를 찾을 수 없습니다."); 
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(error);
+    }
+    
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<Map<String, String>> handleHttpRequestMethodNotSupportedException(
+        HttpRequestMethodNotSupportedException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "지원하지 않는 요청 방식입니다. 허용되는 방식은 " + ex.getSupportedHttpMethods() + " 입니다."); 
+        return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body(error);
+    }
+	
     @ExceptionHandler(JWTVerificationException.class)
     public ResponseEntity<Map<String, String>> handleJWTVerificationException(JWTVerificationException ex) {
+    	log.warn("JWT 검증 실패: {}", ex.getMessage());
         Map<String, String> error = new HashMap<>();
-        error.put("error", ex.getMessage()); 
+        error.put("error", "인증에 실패했습니다. 유효하지 않거나 만료된 토큰입니다."); 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
     }
 	
