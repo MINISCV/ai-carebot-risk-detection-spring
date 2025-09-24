@@ -19,6 +19,6 @@ public class TokenController {
         String newAccessToken = JWTUtil.getJWT(username);
         HttpHeaders headers = new HttpHeaders();
         headers.add(HttpHeaders.AUTHORIZATION, newAccessToken);
-        return ResponseEntity.ok().headers(headers).body("Access Token 갱신됨.");
+        return ResponseEntity.ok().headers(headers).body(null);
     }
 }
