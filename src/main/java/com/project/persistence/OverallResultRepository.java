@@ -1,9 +1,23 @@
 package com.project.persistence;
 
-import org.springframework.data.jpa.repository.JpaRepository;
+import java.util.List;
+import java.util.Optional;
 
-import com.project.domain.OverallResult;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import com.project.domain.analysis.OverallResult;
 
 public interface OverallResultRepository extends JpaRepository<OverallResult, Long>{
-
+	@Query("SELECT DISTINCT o FROM OverallResult o " +
+            "JOIN FETCH o.doll d " +
+            "LEFT JOIN FETCH o.dialogues")
+	List<OverallResult> findAllWithDetails();
+	
+    @Query("SELECT o FROM OverallResult o " +
+            "JOIN FETCH o.doll d " +
+            "LEFT JOIN FETCH o.dialogues " +
+            "WHERE o.id = :id")
+     Optional<OverallResult> findByIdWithDetails(@Param("id") Long id);
 }

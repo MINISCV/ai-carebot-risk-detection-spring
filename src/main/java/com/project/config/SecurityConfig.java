@@ -15,6 +15,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.config.filter.JWTAuthenticationFilter;
 import com.project.config.filter.JWTAuthorizationFilter;
 import com.project.persistence.MemberRepository;
@@ -26,7 +27,8 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 	private final AuthenticationConfiguration authenticationConfiguration;
 	private final MemberRepository memberRepository;
-
+	private final ObjectMapper objectMapper;
+	
 	@Bean
 	PasswordEncoder encoder() {
 		return new BCryptPasswordEncoder();
@@ -44,7 +46,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/login", "/api/refresh").permitAll()
 				.anyRequest().hasRole("ADMIN"));
         JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter(
-                authenticationConfiguration.getAuthenticationManager()
+                authenticationConfiguration.getAuthenticationManager(),
+                objectMapper
             );
         jwtAuthenticationFilter.setFilterProcessesUrl("/api/login");
 		http.addFilterAt(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

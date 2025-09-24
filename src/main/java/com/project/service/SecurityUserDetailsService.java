@@ -7,7 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.project.domain.Member;
+import com.project.domain.member.Member;
 import com.project.persistence.MemberRepository;
 
 import lombok.RequiredArgsConstructor;

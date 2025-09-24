@@ -12,9 +12,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.project.domain.Senior;
-import com.project.dto.SeniorRequestDto;
+import com.project.dto.request.SeniorRequestDto;
+import com.project.dto.response.SeniorResponseDto;
 import com.project.service.SeniorService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,29 +27,31 @@ public class SeniorController {
     private final SeniorService seniorService;
 
     @PostMapping
-    public ResponseEntity<Senior> createSenior(@RequestBody SeniorRequestDto seniorDto) {
-        Senior createdSenior = seniorService.createSenior(seniorDto);
-        URI location = URI.create("/api/seniors/" + createdSenior.getId());
-        return ResponseEntity.created(location).body(createdSenior);
+    public ResponseEntity<SeniorResponseDto> createSenior(@RequestBody SeniorRequestDto requestDto) {
+    	SeniorResponseDto senior = seniorService.createSenior(requestDto);
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+				.path("/{id}")
+				.buildAndExpand(senior.id())
+				.toUri();
+        return ResponseEntity.created(location).body(senior);
     }
 
     @GetMapping
-    public ResponseEntity<List<Senior>> getAllSeniors() {
-        List<Senior> seniors = seniorService.getAllSeniors();
+    public ResponseEntity<List<SeniorResponseDto>> getAllSeniors() {
+        List<SeniorResponseDto> seniors = seniorService.getAllSeniors();
         return ResponseEntity.ok(seniors);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Senior> getSeniorById(@PathVariable Long id) {
-        return seniorService.getSeniorById(id)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.notFound().build());
+    public ResponseEntity<SeniorResponseDto> getSeniorById(@PathVariable Long id) {
+    	SeniorResponseDto senior = seniorService.getSeniorById(id);
+    	return ResponseEntity.ok(senior);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Senior> updateSenior(@PathVariable Long id, @RequestBody SeniorRequestDto seniorDto) {
-        Senior updatedSenior = seniorService.updateSenior(id, seniorDto);
-        return ResponseEntity.ok(updatedSenior);
+    public ResponseEntity<SeniorResponseDto> updateSenior(@PathVariable Long id, @RequestBody SeniorRequestDto seniorDto) {
+    	SeniorResponseDto senior = seniorService.updateSenior(id, seniorDto);
+        return ResponseEntity.ok(senior);
     }
 
     @DeleteMapping("/{id}")

@@ -1,5 +1,6 @@
 package com.project.service;
 
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -17,19 +18,18 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
-import com.project.domain.ConfidenceScores;
-import com.project.domain.Dialogue;
-import com.project.domain.Doll;
-import com.project.domain.OverallResult;
-import com.project.domain.Reason;
-import com.project.domain.Risk;
-import com.project.dto.AnalysisRequestDto;
+import com.project.domain.analysis.ConfidenceScores;
+import com.project.domain.analysis.Dialogue;
+import com.project.domain.analysis.OverallResult;
+import com.project.domain.analysis.Reason;
+import com.project.domain.senior.Doll;
 import com.project.dto.ConfidenceScoresDto;
-import com.project.dto.DialogueDto;
-import com.project.dto.DialogueForApiRequest;
+import com.project.dto.request.DialogueAnalysisRequestDto;
+import com.project.dto.response.AnalysisResponseDto;
+import com.project.dto.response.DialogueAnalysisResponseDto;
+import com.project.dto.response.OverallResultResponseDto;
 import com.project.persistence.DollRepository;
 import com.project.persistence.OverallResultRepository;
 
@@ -41,9 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @RequiredArgsConstructor
 public class AnalyzeService {
-
     private final RestTemplate restTemplate;
-    private final ObjectMapper objectMapper;
     private final DollRepository dollRepository;
     private final OverallResultRepository overallResultRepository;
 
@@ -51,11 +49,12 @@ public class AnalyzeService {
     private String pythonServerUrl;
 
     @Transactional
-    public AnalysisRequestDto analyzeAndSave(MultipartFile file) throws Exception {
-        List<DialogueForApiRequest> pythonRequestList = new ArrayList<>();
+    public AnalysisResponseDto analyzeAndSave(MultipartFile file) {
+        if (file == null || file.isEmpty())
+            throw new IllegalArgumentException("파일이 없거나 비어있습니다.");
+        List<DialogueAnalysisRequestDto> reqeustDialogues = new ArrayList<>();
 
         DateTimeFormatter csvFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:ss");
-        DateTimeFormatter isoFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
         
         try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             reader.readNext();
@@ -65,76 +64,64 @@ public class AnalyzeService {
                 String text = columns[1].trim();
                 String utteredAtCsv = columns[2].trim();
                 LocalDateTime dateTime = LocalDateTime.parse(utteredAtCsv, csvFormatter);
-                String utteredAtForApi = dateTime.format(isoFormatter);
                 if (dollId.isEmpty() || text.isEmpty() || utteredAtCsv.isEmpty()) {
-                    log.warn("Skipping empty or incomplete line in CSV: doll_id={}, text={}, uttered_at={}", dollId, text, utteredAtCsv);
+                    log.warn("비었거나 잘못된 라인 스킵: doll_id={}, text={}, uttered_at={}", dollId, text, utteredAtCsv);
                     continue;
                 }
-                pythonRequestList.add(new DialogueForApiRequest(dollId, text, utteredAtForApi));
+                reqeustDialogues.add(new DialogueAnalysisRequestDto(dollId, text, dateTime));
             }
         } catch (CsvValidationException e) {
             throw new IllegalArgumentException("잘못된 형식의 CSV 파일입니다.", e);
+        } catch (IOException e) {
+            throw new IllegalArgumentException("파일을 읽는 중 오류가 발생했습니다.", e);
         }
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-        HttpEntity<List<DialogueForApiRequest>> requestEntity = new HttpEntity<>(pythonRequestList, headers);
-        log.info("Sending analysis request to Python server");
-        AnalysisRequestDto apiResponse = restTemplate.postForObject(
+        HttpEntity<List<DialogueAnalysisRequestDto>> requestEntity = new HttpEntity<>(reqeustDialogues, headers);
+        log.info("Python 서버로 분석 요청중");
+        AnalysisResponseDto apiResponse = restTemplate.postForObject(
                 pythonServerUrl + "/analyze",
                 requestEntity,
-                AnalysisRequestDto.class);
-
-        log.info("Received response from Python server:");
-        log.info(objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(apiResponse));
-
+                AnalysisResponseDto.class);
         saveAnalysisResult(apiResponse);
-        
         return apiResponse;
     }
     
-    private void saveAnalysisResult(AnalysisRequestDto responseDto) {
+    @Transactional
+    private void saveAnalysisResult(AnalysisResponseDto responseDto) {
         String responseDollId = responseDto.overallResult().dollId();
         
         Doll doll = dollRepository.findById(responseDollId)
-                .orElseThrow(() -> new EntityNotFoundException("Doll not found with id: " + responseDollId));
-
+                .orElseThrow(() -> new EntityNotFoundException("인형 " + responseDollId + "가 없음."));
+        
         ConfidenceScoresDto overallScoresDto = responseDto.overallResult().confidenceScores();
-        ConfidenceScores overallScores = ConfidenceScores.builder()
-                .positive(Double.parseDouble(overallScoresDto.positive()))
-                .danger(Double.parseDouble(overallScoresDto.danger()))
-                .critical(Double.parseDouble(overallScoresDto.critical()))
-                .emergency(Double.parseDouble(overallScoresDto.emergency()))
-                .build();
+        ConfidenceScores overallScores = dtoToConfidenceScores(overallScoresDto);
+        
         List<String> evidenceTexts = responseDto.overallResult().reason().evidence().stream()
                 .map(evidenceDto -> evidenceDto.text())
                 .collect(Collectors.toList());
-
+        
         Reason reason = Reason.builder()
                 .reasons(evidenceTexts)
                 .summary(responseDto.overallResult().reason().summary())
                 .build();
-
+        
         OverallResult overallResult = OverallResult.builder()
                 .doll(doll)
-                .label(Risk.valueOf(responseDto.overallResult().label().toUpperCase()))
+                .label(responseDto.overallResult().label())
                 .confidenceScores(overallScores)
                 .reason(reason)
                 .build();
 
-        for (DialogueDto dialogueDto : responseDto.dialogueResult()) {
+        for (DialogueAnalysisResponseDto dialogueDto : responseDto.dialogueResult()) {
             ConfidenceScoresDto dialogueScoresDto = dialogueDto.confidenceScores();
-            ConfidenceScores dialogueScores = ConfidenceScores.builder()
-                    .positive(Double.parseDouble(dialogueScoresDto.positive()))
-                    .danger(Double.parseDouble(dialogueScoresDto.danger()))
-                    .critical(Double.parseDouble(dialogueScoresDto.critical()))
-                    .emergency(Double.parseDouble(dialogueScoresDto.emergency()))
-                    .build();
+            ConfidenceScores dialogueScores = dtoToConfidenceScores(dialogueScoresDto);
             
             Dialogue dialogue = Dialogue.builder()
                     .text(dialogueDto.text())
                     .utteredAt(dialogueDto.utteredAt())
-                    .label(Risk.valueOf(dialogueDto.label().toUpperCase()))
+                    .label(dialogueDto.label())
                     .confidenceScores(dialogueScores)
                     .build();
             
@@ -142,6 +129,38 @@ public class AnalyzeService {
         }
 
         overallResultRepository.save(overallResult);
-        log.info("Successfully saved analysis result for doll_id: {}", responseDollId);
+        log.info("인형 {}에 대한 분석이 저장되었습니다.", responseDollId);
+    }
+    
+    @Transactional(readOnly = true)
+    public List<OverallResultResponseDto> getAll() {
+    	return overallResultRepository.findAllWithDetails().stream()
+    			.map(OverallResultResponseDto::new)
+    			.toList();
+    }
+    
+    @Transactional(readOnly = true)
+    public OverallResultResponseDto getById(Long id) {
+        OverallResult overallResult = overallResultRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new EntityNotFoundException("분석 결과 ID " + id + "를 찾을 수 없습니다."));
+        return new OverallResultResponseDto(overallResult);
+    }
+    
+    @Transactional
+	public void deleteAnalysis(Long id) {
+    	if(!overallResultRepository.existsById(id))
+    		throw new EntityNotFoundException("ID: " + id + " 분석을 찾을 수 없습니다.");
+    	overallResultRepository.deleteById(id);
+	}
+	
+    private ConfidenceScores dtoToConfidenceScores(ConfidenceScoresDto dto) {
+        if (dto == null)
+            return null;
+        return ConfidenceScores.builder()
+                .positive(dto.positive())
+                .danger(dto.danger())
+                .critical(dto.critical())
+                .emergency(dto.emergency())
+                .build();
     }
 }

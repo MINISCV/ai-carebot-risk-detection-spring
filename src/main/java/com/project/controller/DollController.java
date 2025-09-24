@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import com.project.domain.Doll;
-import com.project.dto.DollRequestDto;
-import com.project.dto.DollResponseDto;
+import com.project.dto.request.DollRequestDto;
+import com.project.dto.response.DollResponseDto;
 import com.project.service.DollService;
 
 import jakarta.validation.Valid;
@@ -27,10 +27,13 @@ public class DollController {
 	private final DollService dollService;
 
     @PostMapping
-    public ResponseEntity<Doll> createDoll(@Valid @RequestBody DollRequestDto dollDto) {
-    	Doll doll = dollService.createDoll(dollDto);
-        URI location = URI.create("/api/dolls/" + doll.getId());
-        return ResponseEntity.created(location).body(doll);
+    public ResponseEntity<DollResponseDto> createDoll(@Valid @RequestBody DollRequestDto requestDto) {
+    	DollResponseDto dollDto = dollService.createDoll(requestDto);
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest()
+				.path("/{id}")
+				.buildAndExpand(dollDto.id())
+				.toUri();
+        return ResponseEntity.created(location).body(dollDto);
     }
 
     @GetMapping

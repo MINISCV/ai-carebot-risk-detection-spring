@@ -6,9 +6,9 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.project.domain.Doll;
-import com.project.dto.DollRequestDto;
-import com.project.dto.DollResponseDto;
+import com.project.domain.senior.Doll;
+import com.project.dto.request.DollRequestDto;
+import com.project.dto.response.DollResponseDto;
 import com.project.persistence.DollRepository;
 
 import jakarta.persistence.EntityNotFoundException;
@@ -20,34 +20,33 @@ public class DollService {
 	private final DollRepository dollRepository;
 	
 	@Transactional
-	public Doll createDoll(DollRequestDto dollDto) {
-		if (dollRepository.existsById(dollDto.id()))
+	public DollResponseDto createDoll(DollRequestDto requestDto) {
+		if (dollRepository.existsById(requestDto.id()))
 			throw new IllegalArgumentException("이미 존재하는 인형 Id입니다.");
 
-		Doll doll = Doll.builder()
-				.id(dollDto.id())
-				.build();
+		Doll doll = dtoToDoll(requestDto);
 		
-		return dollRepository.save(doll);
+		dollRepository.save(doll);
+		return DollResponseDto.from(doll);
 	}
 
     @Transactional(readOnly = true)
     public DollResponseDto getDollById(String id) {
-        Doll doll = dollRepository.findById(id)
+        Doll doll = dollRepository.findByIdWithSenior(id)
                 .orElseThrow(() -> new EntityNotFoundException("인형을 찾을 수 없습니다: " + id));
         return DollResponseDto.from(doll);
     }
 
     @Transactional(readOnly = true)
     public List<DollResponseDto> getAllDolls() {
-        return dollRepository.findAll().stream()
+        return dollRepository.findAllWithSenior().stream()
                 .map(DollResponseDto::from)
                 .collect(Collectors.toList());
     }
 
     @Transactional
     public void deleteDoll(String id) {
-        Doll doll = dollRepository.findById(id)
+        Doll doll = dollRepository.findByIdWithSenior(id)
         		.orElseThrow(() -> new EntityNotFoundException("인형을 찾을 수 없습니다: " + id));
 
         if (doll.getSenior() != null) {
@@ -55,5 +54,13 @@ public class DollService {
         }
         
         dollRepository.delete(doll);
+    }
+    
+    private Doll dtoToDoll(DollRequestDto dto) {
+        if (dto == null)
+            return null;
+        return Doll.builder()
+                .id(dto.id())
+                .build();
     }
 }
