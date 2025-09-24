@@ -11,7 +11,6 @@ import com.project.util.JWTUtil;
 
 @RestController
 public class TokenController {
-
     @PostMapping("/api/refresh")
     public ResponseEntity<String> refreshAccessToken(@CookieValue(value = "refresh_token", required = false) String refreshToken) {
         if (refreshToken == null)

@@ -21,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/analyze")
 @RequiredArgsConstructor
 public class AnalyzeController {
-
     private final AnalyzeService analyzeService;
 
     @PostMapping
