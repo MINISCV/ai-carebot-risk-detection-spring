@@ -37,7 +37,7 @@ public class AnalyzeController {
     
     @GetMapping("/{id}")
     public ResponseEntity<OverallResultResponseDto> getAnalysisById(@PathVariable Long id) {
-        OverallResultResponseDto responseDto = analyzeService.getById(id);
+    	OverallResultResponseDto responseDto = analyzeService.getById(id);
         return ResponseEntity.ok(responseDto);
     }
     
