@@ -3,7 +3,8 @@ package com.project.domain.senior;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Sex {
-	MALE, FEMALE;
+	MALE,
+	FEMALE;
 
     @JsonCreator
     public static Sex from(String value) {

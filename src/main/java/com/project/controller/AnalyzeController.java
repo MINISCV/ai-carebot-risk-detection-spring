@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.project.dto.response.AnalysisResponseDto;
+import com.project.dto.response.AnalysisResponseWithIdDto;
 import com.project.dto.response.OverallResultResponseDto;
 import com.project.service.AnalyzeService;
 
@@ -24,8 +24,8 @@ public class AnalyzeController {
     private final AnalyzeService analyzeService;
 
     @PostMapping
-    public ResponseEntity<AnalysisResponseDto> analyzeDialogues(MultipartFile file) {
-    	AnalysisResponseDto response = analyzeService.analyzeAndSave(file);
+    public ResponseEntity<AnalysisResponseWithIdDto> analyzeDialogues(MultipartFile file) {
+    	AnalysisResponseWithIdDto response = analyzeService.analyzeAndSave(file);
         return ResponseEntity.ok(response);
     }
     

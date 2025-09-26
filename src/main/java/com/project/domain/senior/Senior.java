@@ -1,6 +1,14 @@
 package com.project.domain.senior;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
+
+import com.project.domain.analysis.OverallResult;
+import com.project.domain.analysis.Risk;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embedded;
@@ -12,6 +20,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -36,10 +45,17 @@ public class Senior {
 	
 	@Enumerated(EnumType.STRING)
 	private Sex sex;
+
+	@Enumerated(EnumType.STRING)
+	private Risk state;
+	
+	@Enumerated(EnumType.STRING)
+	private Residence residence;
 	
 	private String phone;
 	
-	private String address;
+	@Embedded
+	private Address address;
 	
 	private String note;
     
@@ -48,29 +64,44 @@ public class Senior {
 	
 	@Embedded
 	private MedicalInfo medicalInfo;
+
+	@CreationTimestamp
+    private LocalDateTime createdAt;
+	
+	@OneToMany(mappedBy = "senior", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<OverallResult> overallResults = new ArrayList<>();
         
     @Builder
-    public Senior(String name, LocalDate birthDate, Sex sex, String phone, 
-                  String address, String note, Guardian guardian, MedicalInfo medicalInfo) {
+    public Senior(String name, LocalDate birthDate, Sex sex, Residence residence, String phone, 
+    		Address address, String note, Guardian guardian, MedicalInfo medicalInfo, List<OverallResult> overallResults) {
         this.name = name;
         this.birthDate = birthDate;
         this.sex = sex;
+        this.state = Risk.POSITIVE;
+        this.residence = residence;
         this.phone = phone;
         this.address = address;
         this.note = note;
         this.guardian = guardian;
         this.medicalInfo = medicalInfo;
+        if(overallResults == null)
+        	this.overallResults = new ArrayList<>();
     }
     
-    public void updatePersonalInfo(String name, LocalDate birthDate, Sex sex, String phone, String address, String note) {
+    public void updatePersonalInfo(String name, LocalDate birthDate, Sex sex, Residence residence, String phone, Address address, String note) {
         this.name = name;
         this.birthDate = birthDate;
         this.sex = sex;
+        this.residence = residence;
         this.phone = phone;
         this.address = address;
         this.note = note;
     }
 
+    public void updateState(Risk state) {
+        this.state = state;
+    }
+    
     public void updateGuardianInfo(Guardian guardian) {
         this.guardian = guardian;
     }

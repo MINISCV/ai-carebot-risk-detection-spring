@@ -12,10 +12,12 @@ import lombok.NoArgsConstructor;
 public class MedicalInfo {
     private String diseases;
     private String medications;
+    private String diseaseNote;
     
     @Builder
-    public MedicalInfo(String diseases, String medications) {
+    public MedicalInfo(String diseases, String medications, String note) {
         this.diseases = diseases;
         this.medications = medications;
+        this.diseaseNote = note;
     }
 }

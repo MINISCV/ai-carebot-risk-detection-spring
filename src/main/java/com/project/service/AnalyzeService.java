@@ -28,6 +28,7 @@ import com.project.domain.senior.Doll;
 import com.project.dto.ConfidenceScoresDto;
 import com.project.dto.request.DialogueAnalysisRequestDto;
 import com.project.dto.response.AnalysisResponseDto;
+import com.project.dto.response.AnalysisResponseWithIdDto;
 import com.project.dto.response.DialogueAnalysisResponseDto;
 import com.project.dto.response.OverallResultResponseDto;
 import com.project.exception.InvalidFileException;
@@ -50,7 +51,7 @@ public class AnalyzeService {
     private String pythonServerUrl;
 
     @Transactional
-    public AnalysisResponseDto analyzeAndSave(MultipartFile file) {
+    public AnalysisResponseWithIdDto analyzeAndSave(MultipartFile file) {
         if (file == null || file.isEmpty())
             throw new InvalidFileException("파일이 없거나 비어있습니다.");
         List<DialogueAnalysisRequestDto> reqeustDialogues = new ArrayList<>();
@@ -64,11 +65,11 @@ public class AnalyzeService {
                 String dollId = columns[0].trim();
                 String text = columns[1].trim();
                 String utteredAtCsv = columns[2].trim();
-                LocalDateTime dateTime = LocalDateTime.parse(utteredAtCsv, csvFormatter);
                 if (dollId.isEmpty() || text.isEmpty() || utteredAtCsv.isEmpty()) {
                     log.warn("비었거나 잘못된 라인 스킵: doll_id={}, text={}, uttered_at={}", dollId, text, utteredAtCsv);
                     continue;
                 }
+                LocalDateTime dateTime = LocalDateTime.parse(utteredAtCsv, csvFormatter);
                 reqeustDialogues.add(new DialogueAnalysisRequestDto(dollId, text, dateTime));
             }
         } catch (CsvValidationException e) {
@@ -85,16 +86,18 @@ public class AnalyzeService {
                 pythonServerUrl + "/analyze",
                 requestEntity,
                 AnalysisResponseDto.class);
-        saveAnalysisResult(apiResponse);
-        return apiResponse;
+        AnalysisResponseWithIdDto result = saveAnalysisResult(apiResponse);
+        return result;
     }
     
     @Transactional
-    private void saveAnalysisResult(AnalysisResponseDto responseDto) {
+    private AnalysisResponseWithIdDto saveAnalysisResult(AnalysisResponseDto responseDto) {
         String responseDollId = responseDto.overallResult().dollId();
         
-        Doll doll = dollRepository.findById(responseDollId)
+        Doll doll = dollRepository.findByIdWithSenior(responseDollId)
                 .orElseThrow(() -> new EntityNotFoundException("인형 " + responseDollId + "가 없음."));
+        if(doll.getSenior() == null)
+        	throw new EntityNotFoundException("인형에 할당된 시니어가 없음.");
         
         ConfidenceScoresDto overallScoresDto = responseDto.overallResult().confidenceScores();
         ConfidenceScores overallScores = dtoToConfidenceScores(overallScoresDto);
@@ -110,11 +113,12 @@ public class AnalyzeService {
         
         OverallResult overallResult = OverallResult.builder()
                 .doll(doll)
+                .senior(doll.getSenior())
                 .label(responseDto.overallResult().label())
                 .confidenceScores(overallScores)
                 .reason(reason)
                 .build();
-
+        
         for (DialogueAnalysisResponseDto dialogueDto : responseDto.dialogueResult()) {
             ConfidenceScoresDto dialogueScoresDto = dialogueDto.confidenceScores();
             ConfidenceScores dialogueScores = dtoToConfidenceScores(dialogueScoresDto);
@@ -129,8 +133,10 @@ public class AnalyzeService {
             overallResult.addDialogue(dialogue);
         }
 
-        overallResultRepository.save(overallResult);
+        AnalysisResponseWithIdDto result = new AnalysisResponseWithIdDto(overallResultRepository.save(overallResult).getId(), responseDto);
+        overallResult.getSenior().updateState(overallResult.getLabel());
         log.info("인형 {}에 대한 분석이 저장되었습니다.", responseDollId);
+        return result;
     }
     
     @Transactional(readOnly = true)

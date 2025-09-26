@@ -7,6 +7,7 @@ import java.util.List;
 import org.hibernate.annotations.CreationTimestamp;
 
 import com.project.domain.senior.Doll;
+import com.project.domain.senior.Senior;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Embedded;
@@ -34,6 +35,10 @@ public class OverallResult {
     private Long id;
     
 	@ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "senior_id")
+	private Senior senior;
+	
+	@ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doll_id")
 	private Doll doll;
 	
@@ -53,8 +58,9 @@ public class OverallResult {
     private List<Dialogue> dialogues = new ArrayList<>();
     
     @Builder
-    public OverallResult(Doll doll, Risk label, ConfidenceScores confidenceScores, Reason reason) {
+    public OverallResult(Doll doll, Senior senior, Risk label, ConfidenceScores confidenceScores, Reason reason) {
         this.doll = doll;
+        this.senior = senior;
         this.label = label;
         this.confidenceScores = confidenceScores;
         this.reason = reason;

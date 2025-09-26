@@ -6,6 +6,7 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.project.domain.senior.Address;
 import com.project.domain.senior.Doll;
 import com.project.domain.senior.Guardian;
 import com.project.domain.senior.MedicalInfo;
@@ -84,6 +85,7 @@ public class SeniorService {
         return MedicalInfo.builder()
         		.diseases(dto.diseases())
         		.medications(dto.medications())
+        		.note(dto.diseaseNote())
         		.build();
     }
 	
@@ -95,18 +97,28 @@ public class SeniorService {
         		.guardianNote(dto.guardianNote())
         		.build();
     }
+    
+    private Address dtoToAddress(SeniorRequestDto dto) {
+        return Address.builder()
+        		.address(dto.address())
+        		.gu(dto.gu())
+        		.dong(dto.dong())
+        		.build();
+    }
 	
     private Senior dtoToSenior(SeniorRequestDto dto) {
         if (dto == null)
             return null;
         Guardian guardian = dtoToGuardian(dto);
         MedicalInfo medicalInfo = dtoToMedicalInfo(dto);
+        Address address = dtoToAddress(dto);
         Senior senior = Senior.builder()
         		.name(dto.name())
         		.birthDate(dto.birthDate())
         		.sex(dto.sex())
+        		.residence(dto.residence())
         		.phone(dto.phone())
-        		.address(dto.address())
+        		.address(address)
         		.note(dto.note())
         		.guardian(guardian)
         		.medicalInfo(medicalInfo)
@@ -115,8 +127,9 @@ public class SeniorService {
     }
     
     private void updateSenior(Senior senior, SeniorRequestDto dto) {
-    	senior.updatePersonalInfo(dto.name(), dto.birthDate(), dto.sex(),
-    			dto.phone(), dto.address(), dto.note());
+        Address address = dtoToAddress(dto);
+    	senior.updatePersonalInfo(dto.name(), dto.birthDate(), dto.sex(), dto.residence(),
+    			dto.phone(), address, dto.note());
     	senior.updateGuardianInfo(dtoToGuardian(dto));
     	senior.updateMedicalInfo(dtoToMedicalInfo(dto));
     }

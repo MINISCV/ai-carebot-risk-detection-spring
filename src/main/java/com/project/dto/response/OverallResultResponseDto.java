@@ -10,6 +10,7 @@ import com.project.dto.ConfidenceScoresDto;
 
 public record OverallResultResponseDto(
 		Long id,
+		Long seniorId,
 		String dollId,
 		int dialogueCount,
 		int charLength,
@@ -23,6 +24,7 @@ public record OverallResultResponseDto(
     public OverallResultResponseDto(OverallResult entity) {
         this(
         	entity.getId(),
+        	entity.getSenior().getId(),
             entity.getDoll().getId(),
             entity.getDialogues().size(),
             entity.getDialogues().stream().map(Dialogue::getText).collect(Collectors.joining(" ")).length(),

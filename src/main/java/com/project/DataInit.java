@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -20,9 +19,11 @@ import com.project.domain.analysis.Reason;
 import com.project.domain.analysis.Risk;
 import com.project.domain.member.Member;
 import com.project.domain.member.Role;
+import com.project.domain.senior.Address;
 import com.project.domain.senior.Doll;
 import com.project.domain.senior.Guardian;
 import com.project.domain.senior.MedicalInfo;
+import com.project.domain.senior.Residence;
 import com.project.domain.senior.Senior;
 import com.project.domain.senior.Sex;
 import com.project.persistence.MemberRepository;
@@ -79,21 +80,29 @@ public class DataInit implements ApplicationRunner {
                 MedicalInfo medicalInfo = MedicalInfo.builder()
                         .diseases(diseases[random.nextInt(diseases.length)])
                         .medications(medications[random.nextInt(medications.length)])
+                        .note("주의요함")
                         .build();
-
+                
+                Address address = Address.builder()
+                		.address("서울특별시 어딘가 " + i + "번지")
+                		.dong("어디 " + i + "동")
+                		.gu("어디 " + i + "구")
+                		.build();
+                
                 Senior senior = Senior.builder()
                         .name(seniorName)
                         .birthDate(LocalDate.of(1930 + random.nextInt(20), 1, 1).plusDays(random.nextInt(365)))
                         .sex(sex)
+                        .residence(Residence.values()[i % 4])
                         .phone("010-9876-54" + String.format("%02d", i))
-                        .address("서울특별시 어딘가 " + i + "번지")
+                        .address(address)
                         .note("초기 등록")
                         .guardian(guardian)
                         .medicalInfo(medicalInfo)
                         .build();
 
                 Doll doll = Doll.builder()
-                        .id(UUID.randomUUID().toString())
+                        .id("" + (15 - i))
                         .build();
                 senior.changeDoll(doll);
 
@@ -111,7 +120,8 @@ public class DataInit implements ApplicationRunner {
                             .build();
 
                     OverallResult overallResult = OverallResult.builder()
-                            .doll(doll)
+                            .senior(senior)
+                            .doll(senior.getDoll())
                             .label(overallRisk)
                             .confidenceScores(overallScores)
                             .reason(reason)
@@ -136,7 +146,7 @@ public class DataInit implements ApplicationRunner {
                                 .build();
                         overallResult.addDialogue(dialogue); 
                     }
-                    doll.getOverallResults().add(overallResult);
+                    senior.getOverallResults().add(overallResult);
                 }
                 seniorList.add(senior);
             }

@@ -24,18 +24,16 @@ public class Doll {
 	
 	@OneToOne(mappedBy = "doll")
     private Senior senior;
-	
+
 	@OneToMany(mappedBy = "doll", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<OverallResult> overallResults = new ArrayList<>();
 	
-
 	@Builder
     public Doll(String id, Senior senior, List<OverallResult> overallResults) {
         this.id = id;
         this.senior = senior;
-        if (overallResults != null) {
-            this.overallResults = overallResults;
-        }
+        if(overallResults == null)
+        	this.overallResults = new ArrayList<>();
     }
 	
 	protected void setSenior(Senior senior) {
