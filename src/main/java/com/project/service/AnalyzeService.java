@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -27,10 +29,11 @@ import com.project.domain.analysis.Reason;
 import com.project.domain.senior.Doll;
 import com.project.dto.ConfidenceScoresDto;
 import com.project.dto.request.DialogueAnalysisRequestDto;
+import com.project.dto.request.OverallResultSearchCondition;
 import com.project.dto.response.AnalysisResponseDto;
 import com.project.dto.response.AnalysisResponseWithIdDto;
 import com.project.dto.response.DialogueAnalysisResponseDto;
-import com.project.dto.response.OverallResultResponseDto;
+import com.project.dto.response.OverallResultListResponseDto;
 import com.project.exception.InvalidFileException;
 import com.project.persistence.DollRepository;
 import com.project.persistence.OverallResultRepository;
@@ -138,19 +141,10 @@ public class AnalyzeService {
         log.info("인형 {}에 대한 분석이 저장되었습니다.", responseDollId);
         return result;
     }
-    
+
     @Transactional(readOnly = true)
-    public List<OverallResultResponseDto> getAll() {
-    	return overallResultRepository.findAllWithDetails().stream()
-    			.map(OverallResultResponseDto::new)
-    			.toList();
-    }
-    
-    @Transactional(readOnly = true)
-    public OverallResultResponseDto getById(Long id) {
-        OverallResult overallResult = overallResultRepository.findByIdWithDetails(id)
-                .orElseThrow(() -> new EntityNotFoundException("분석 결과 ID " + id + "를 찾을 수 없습니다."));
-        return new OverallResultResponseDto(overallResult);
+    public Page<OverallResultListResponseDto> searchOverallResults(OverallResultSearchCondition condition, Pageable pageable) {
+        return overallResultRepository.searchOverallResults(condition, pageable);
     }
     
     @Transactional

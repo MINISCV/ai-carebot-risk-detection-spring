@@ -44,6 +44,10 @@ public class JWTAuthorizationFilter extends OncePerRequestFilter {
 			return;
 		}
 		Member findmember = opt.get();
+		if (!findmember.isEnabled()) {
+		    filterChain.doFilter(request, response);
+		    return;
+		}
 		User user = new User(findmember.getUsername(), findmember.getPassword(),
 				AuthorityUtils.createAuthorityList(findmember.getRole().toString()));
 		Authentication auth = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());

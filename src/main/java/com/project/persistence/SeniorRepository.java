@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 
 import com.project.domain.senior.Senior;
 
-public interface SeniorRepository extends JpaRepository<Senior, Long>{
+public interface SeniorRepository extends JpaRepository<Senior, Long>, SeniorRepositoryCustom {
 	@Query("SELECT s FROM Senior s LEFT JOIN FETCH s.doll WHERE s.id = :id")
 	Optional<Senior> findByIdWithDoll(Long id);
 

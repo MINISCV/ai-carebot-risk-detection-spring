@@ -1,13 +1,15 @@
 package com.project.controller;
 
 import java.net.URI;
-import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,6 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.project.dto.request.SeniorRequestDto;
+import com.project.dto.request.SeniorSearchCondition;
+import com.project.dto.response.CustomPageDto;
+import com.project.dto.response.SeniorListResponseDto;
 import com.project.dto.response.SeniorResponseDto;
 import com.project.service.SeniorService;
 
@@ -42,17 +47,12 @@ public class SeniorController {
 				.toUri();
         return ResponseEntity.created(location).body(senior);
     }
-
+	
     @GetMapping
-    public ResponseEntity<List<SeniorResponseDto>> getAllSeniors() {
-        List<SeniorResponseDto> seniors = seniorService.getAllSeniors();
-        return ResponseEntity.ok(seniors);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<SeniorResponseDto> getSeniorById(@PathVariable Long id) {
-    	SeniorResponseDto senior = seniorService.getSeniorById(id);
-    	return ResponseEntity.ok(senior);
+    public ResponseEntity<CustomPageDto<SeniorListResponseDto>> searchSeniors(
+            @ModelAttribute SeniorSearchCondition condition, Pageable pageable) {
+        Page<SeniorListResponseDto> results = seniorService.searchSeniors(condition, pageable);
+        return ResponseEntity.ok(CustomPageDto.from(results));
     }
     
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

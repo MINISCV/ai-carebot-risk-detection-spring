@@ -9,7 +9,7 @@ import org.springframework.data.repository.query.Param;
 
 import com.project.domain.analysis.OverallResult;
 
-public interface OverallResultRepository extends JpaRepository<OverallResult, Long>{
+public interface OverallResultRepository extends JpaRepository<OverallResult, Long>, OverallResultRepositoryCustom  {
 	@Query("SELECT DISTINCT o FROM OverallResult o " +
             "JOIN FETCH o.doll d " +
             "LEFT JOIN FETCH o.dialogues")

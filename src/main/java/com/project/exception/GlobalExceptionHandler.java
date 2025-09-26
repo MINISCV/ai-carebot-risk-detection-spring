@@ -13,6 +13,7 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
@@ -120,6 +121,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(error);
     }
     
+    @ExceptionHandler(ResourceAccessException.class)
+    public ResponseEntity<Map<String, String>> handleResourceAccessException(ResourceAccessException ex) {
+        log.error("외부 서비스 연결 실패: {}", ex.getMessage());
+        Map<String, String> error = new HashMap<>();
+        error.put("error", "분석 서버와 통신하는 중 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.");
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(error);
+    }
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleAllUncaughtException(Exception ex) {

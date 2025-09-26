@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +19,8 @@ import com.project.domain.senior.Guardian;
 import com.project.domain.senior.MedicalInfo;
 import com.project.domain.senior.Senior;
 import com.project.dto.request.SeniorRequestDto;
+import com.project.dto.request.SeniorSearchCondition;
+import com.project.dto.response.SeniorListResponseDto;
 import com.project.dto.response.SeniorResponseDto;
 import com.project.persistence.DollRepository;
 import com.project.persistence.SeniorRepository;
@@ -55,18 +57,9 @@ public class SeniorService {
 	}
 
 	@Transactional(readOnly = true)
-	public SeniorResponseDto getSeniorById(Long id) {
-		Senior senior = seniorRepository.findByIdWithDoll(id)
-				.orElseThrow(() -> new EntityNotFoundException("시니어 " + id + "는 없음."));
-		return new SeniorResponseDto(senior);
-	}
-
-	@Transactional(readOnly = true)
-	public List<SeniorResponseDto> getAllSeniors() {
-		return seniorRepository.findAllWithDoll().stream()
-				.map(SeniorResponseDto::new)
-				.collect(Collectors.toList());
-	}
+    public Page<SeniorListResponseDto> searchSeniors(SeniorSearchCondition condition, Pageable pageable) {
+        return seniorRepository.searchSeniors(condition, pageable);
+    }
 
 	@Transactional
 	public SeniorResponseDto updateSenior(Long id, SeniorRequestDto seniorDto, MultipartFile photo) {
@@ -123,7 +116,7 @@ public class SeniorService {
             String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
             String savedFilename = UUID.randomUUID().toString() + extension;
 
-            Path destination = Paths.get(uploadPath + savedFilename);
+            Path destination = Paths.get(uploadPath, savedFilename);
             photo.transferTo(destination);
 
             return savedFilename;
@@ -136,7 +129,7 @@ public class SeniorService {
     private void deletePhoto(String filename) {
         if (filename == null) return;
         try {
-            Path fileToDelete = Paths.get(uploadPath + filename);
+            Path fileToDelete = Paths.get(uploadPath, filename);
             Files.deleteIfExists(fileToDelete);
         } catch (IOException e) {
             log.error("사진 파일 삭제 실패: " + filename, e);
