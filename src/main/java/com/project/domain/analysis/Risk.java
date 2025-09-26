@@ -3,7 +3,10 @@ package com.project.domain.analysis;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public enum Risk {
-	POSITIVE, DANGER, CRITICAL, EMERGENCY;
+	POSITIVE, 
+	DANGER, 
+	CRITICAL, 
+	EMERGENCY;
 	
     @JsonCreator
     public static Risk from(String value) {
