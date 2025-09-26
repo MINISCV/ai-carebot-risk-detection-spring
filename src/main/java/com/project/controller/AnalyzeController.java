@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project.dto.request.OverallResultSearchCondition;
+import com.project.dto.response.AnalysisDetailResponseDto;
 import com.project.dto.response.AnalysisResponseWithIdDto;
 import com.project.dto.response.CustomPageDto;
 import com.project.dto.response.OverallResultListResponseDto;
@@ -37,6 +38,12 @@ public class AnalyzeController {
             @ModelAttribute OverallResultSearchCondition condition, Pageable pageable) {
         Page<OverallResultListResponseDto> resultsPage = analyzeService.searchOverallResults(condition, pageable);
         return ResponseEntity.ok(CustomPageDto.from(resultsPage));
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<AnalysisDetailResponseDto> getAnalysisDetails(@PathVariable Long id) {
+        AnalysisDetailResponseDto analysisDetails = analyzeService.getAnalysisDetails(id);
+        return ResponseEntity.ok(analysisDetails);
     }
     
     @DeleteMapping("/{id}")

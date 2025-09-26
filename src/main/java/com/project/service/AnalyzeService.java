@@ -30,6 +30,7 @@ import com.project.domain.senior.Doll;
 import com.project.dto.ConfidenceScoresDto;
 import com.project.dto.request.DialogueAnalysisRequestDto;
 import com.project.dto.request.OverallResultSearchCondition;
+import com.project.dto.response.AnalysisDetailResponseDto;
 import com.project.dto.response.AnalysisResponseDto;
 import com.project.dto.response.AnalysisResponseWithIdDto;
 import com.project.dto.response.DialogueAnalysisResponseDto;
@@ -145,6 +146,14 @@ public class AnalyzeService {
     @Transactional(readOnly = true)
     public Page<OverallResultListResponseDto> searchOverallResults(OverallResultSearchCondition condition, Pageable pageable) {
         return overallResultRepository.searchOverallResults(condition, pageable);
+    }
+    
+    @Transactional(readOnly = true)
+    public AnalysisDetailResponseDto getAnalysisDetails(Long id) {
+        OverallResult overallResult = overallResultRepository.findByIdWithDetails(id)
+                .orElseThrow(() -> new EntityNotFoundException("ID: " + id + " 분석을 찾을 수 없습니다."));
+        
+        return AnalysisDetailResponseDto.from(overallResult);
     }
     
     @Transactional

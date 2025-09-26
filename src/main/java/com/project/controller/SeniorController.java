@@ -22,6 +22,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import com.project.dto.request.SeniorRequestDto;
 import com.project.dto.request.SeniorSearchCondition;
 import com.project.dto.response.CustomPageDto;
+import com.project.dto.response.SeniorDetailResponseDto;
 import com.project.dto.response.SeniorListResponseDto;
 import com.project.dto.response.SeniorResponseDto;
 import com.project.service.SeniorService;
@@ -53,6 +54,12 @@ public class SeniorController {
             @ModelAttribute SeniorSearchCondition condition, Pageable pageable) {
         Page<SeniorListResponseDto> results = seniorService.searchSeniors(condition, pageable);
         return ResponseEntity.ok(CustomPageDto.from(results));
+    }
+    
+    @GetMapping("/{id}")
+    public ResponseEntity<SeniorDetailResponseDto> getSeniorDetails(@PathVariable Long id) {
+        SeniorDetailResponseDto seniorDetails = seniorService.getSeniorDetails(id);
+        return ResponseEntity.ok(seniorDetails);
     }
     
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

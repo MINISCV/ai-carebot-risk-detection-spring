@@ -14,8 +14,9 @@ public interface OverallResultRepository extends JpaRepository<OverallResult, Lo
             "JOIN FETCH o.doll d " +
             "LEFT JOIN FETCH o.dialogues")
 	List<OverallResult> findAllWithDetails();
-	
+	 
     @Query("SELECT o FROM OverallResult o " +
+            "JOIN FETCH o.senior s " +
             "JOIN FETCH o.doll d " +
             "LEFT JOIN FETCH o.dialogues " +
             "WHERE o.id = :id")

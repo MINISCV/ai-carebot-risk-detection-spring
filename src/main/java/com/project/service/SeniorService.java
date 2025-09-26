@@ -4,7 +4,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.project.domain.analysis.OverallResult;
 import com.project.domain.senior.Address;
 import com.project.domain.senior.Doll;
 import com.project.domain.senior.Guardian;
@@ -20,6 +24,8 @@ import com.project.domain.senior.MedicalInfo;
 import com.project.domain.senior.Senior;
 import com.project.dto.request.SeniorRequestDto;
 import com.project.dto.request.SeniorSearchCondition;
+import com.project.dto.response.RecentOverallResultDto;
+import com.project.dto.response.SeniorDetailResponseDto;
 import com.project.dto.response.SeniorListResponseDto;
 import com.project.dto.response.SeniorResponseDto;
 import com.project.persistence.DollRepository;
@@ -59,6 +65,20 @@ public class SeniorService {
 	@Transactional(readOnly = true)
     public Page<SeniorListResponseDto> searchSeniors(SeniorSearchCondition condition, Pageable pageable) {
         return seniorRepository.searchSeniors(condition, pageable);
+    }
+	
+	@Transactional(readOnly = true)
+    public SeniorDetailResponseDto getSeniorDetails(Long id) {
+        Senior senior = seniorRepository.findDetailsById(id)
+                .orElseThrow(() -> new EntityNotFoundException("시니어 " + id + "는 없음."));
+
+        List<RecentOverallResultDto> recentResults = senior.getOverallResults().stream()
+                .sorted(Comparator.comparing(OverallResult::getTimestamp).reversed())
+                .limit(5)
+                .map(RecentOverallResultDto::from)
+                .collect(Collectors.toList());
+
+        return new SeniorDetailResponseDto(senior, recentResults);
     }
 
 	@Transactional
