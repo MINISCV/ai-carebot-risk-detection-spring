@@ -3,5 +3,5 @@
 ## 요구사항
 - JDK 21
 - 환경변수 설정
-	- DB_URL(database - caring_doll), DB_USERNAME, DB_PASSWORD
+	- DB_URL, DB_USERNAME, DB_PASSWORD
 	
