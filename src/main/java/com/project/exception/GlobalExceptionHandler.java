@@ -1,11 +1,14 @@
 package com.project.exception;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -88,6 +91,35 @@ public class GlobalExceptionHandler {
         error.put("error", ex.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT).body(error);
     }
+    
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<Map<String, String>> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex) {
+        log.warn("지원하지 않는 미디어 타입 요청: {}", ex.getMessage());
+        Map<String, String> error = new HashMap<>();
+        String errorMessage;
+
+        MediaType contentType = ex.getContentType();
+        List<MediaType> supportedMediaTypes = ex.getSupportedMediaTypes();
+
+        if (contentType != null) {
+            if (contentType.isCompatibleWith(MediaType.APPLICATION_JSON) && supportedMediaTypes.contains(MediaType.MULTIPART_FORM_DATA)) {
+                errorMessage = "잘못된 요청 형식입니다. 이 API는 'multipart/form-data' 형식의 요청만 지원합니다. JSON 데이터와 파일을 함께 보내주세요.";
+            } else if (contentType.isCompatibleWith(MediaType.APPLICATION_OCTET_STREAM)) {
+                errorMessage = "지원하지 않는 Content-Type 입니다. form-data로 JSON 객체를 보낼 경우, 해당 파트의 Content-Type을 'application/json'으로 명시적으로 지정해야 합니다.";
+            } else {
+                errorMessage = String.format("지원하지 않는 Content-Type('%s') 입니다. 지원되는 형식: %s", contentType, supportedMediaTypes);
+            }
+        } else if (ex.getMessage().contains("Invalid mime type")) {
+            errorMessage = "요청의 Content-Type 형식이 올바르지 않습니다. 'type/subtype' 형식(예: 'application/json')을 사용해야 합니다.";
+        } else {
+            errorMessage = "Content-Type 헤더가 누락되었거나 형식이 잘못되었습니다.";
+        }
+        
+        error.put("error", errorMessage);
+        
+        return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(error);
+    }
+    
     
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, String>> handleAllUncaughtException(Exception ex) {

@@ -41,6 +41,8 @@ public class Senior {
 	
 	private String name;
 	
+	private String photo;
+	
 	private LocalDate birthDate;
 	
 	@Enumerated(EnumType.STRING)
@@ -72,9 +74,10 @@ public class Senior {
 	private List<OverallResult> overallResults = new ArrayList<>();
         
     @Builder
-    public Senior(String name, LocalDate birthDate, Sex sex, Residence residence, String phone, 
+    public Senior(String name, String photo, LocalDate birthDate, Sex sex, Residence residence, String phone, 
     		Address address, String note, Guardian guardian, MedicalInfo medicalInfo, List<OverallResult> overallResults) {
         this.name = name;
+        this.photo = photo;
         this.birthDate = birthDate;
         this.sex = sex;
         this.state = Risk.POSITIVE;
@@ -88,8 +91,9 @@ public class Senior {
         	this.overallResults = new ArrayList<>();
     }
     
-    public void updatePersonalInfo(String name, LocalDate birthDate, Sex sex, Residence residence, String phone, Address address, String note) {
+    public void updatePersonalInfo(String name, String photo, LocalDate birthDate, Sex sex, Residence residence, String phone, Address address, String note) {
         this.name = name;
+        this.photo = photo;
         this.birthDate = birthDate;
         this.sex = sex;
         this.residence = residence;

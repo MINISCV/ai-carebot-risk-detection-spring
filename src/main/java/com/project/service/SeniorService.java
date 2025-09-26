@@ -1,10 +1,17 @@
 package com.project.service;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.project.domain.senior.Address;
 import com.project.domain.senior.Doll;
@@ -18,22 +25,29 @@ import com.project.persistence.SeniorRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SeniorService {
 	private final SeniorRepository seniorRepository;
 	private final DollRepository dollRepository;
 
+	@Value("${senior.photo.upload-path}")
+    private String uploadPath;
+	
 	@Transactional
-	public SeniorResponseDto createSenior(SeniorRequestDto requestDto) {
+	public SeniorResponseDto createSenior(SeniorRequestDto requestDto, MultipartFile photo) {
 		Doll doll = dollRepository.findByIdWithSenior(requestDto.dollId())
 				.orElseThrow(() -> new EntityNotFoundException("인형 " + requestDto.dollId() + " 없음."));
 		
 		if (doll.getSenior() != null)
 			throw new IllegalArgumentException("해당 인형은 이미 사용 중.");
 
-		Senior senior = dtoToSenior(requestDto);
+		String photoFilename = savePhoto(photo);
+		
+		Senior senior = dtoToSenior(requestDto, photoFilename);
 		senior.changeDoll(doll);
 		seniorRepository.save(senior);
 		
@@ -55,7 +69,7 @@ public class SeniorService {
 	}
 
 	@Transactional
-	public SeniorResponseDto updateSenior(Long id, SeniorRequestDto seniorDto) {
+	public SeniorResponseDto updateSenior(Long id, SeniorRequestDto seniorDto, MultipartFile photo) {
 		Senior existingSenior = seniorRepository.findByIdWithDoll(id)
 				.orElseThrow(() -> new EntityNotFoundException("시니어 " + id + "는 없음."));
 
@@ -66,8 +80,16 @@ public class SeniorService {
 				throw new IllegalArgumentException("해당 인형은 이미 사용 중.");
 			existingSenior.changeDoll(newDoll);
 		}
+		
+		String newPhotoFilename = existingSenior.getPhoto();
+        if (photo != null && !photo.isEmpty()) {
+            if (newPhotoFilename != null) {
+                deletePhoto(newPhotoFilename);
+            }
+            newPhotoFilename = savePhoto(photo);
+        }
 
-		updateSenior(existingSenior, seniorDto);
+		updateSenior(existingSenior, seniorDto, newPhotoFilename);
 		 
 		return new SeniorResponseDto(existingSenior);
 	}
@@ -76,10 +98,50 @@ public class SeniorService {
 	public void deleteSenior(Long id) {
 		Senior senior = seniorRepository.findByIdWithDoll(id)
 				.orElseThrow(() -> new EntityNotFoundException("시니어 " + id + "는 없음."));
+		
+		if (senior.getPhoto() != null) {
+            deletePhoto(senior.getPhoto());
+        }
+		
 		if (senior.getDoll() != null)
 	        senior.changeDoll(null);
 		seniorRepository.deleteById(id);
 	}
+	
+	private String savePhoto(MultipartFile photo) {
+        if (photo == null || photo.isEmpty()) {
+            return null;
+        }
+
+        try {
+            Path uploadDir = Paths.get(uploadPath);
+            if (!Files.exists(uploadDir)) {
+                Files.createDirectories(uploadDir);
+            }
+
+            String originalFilename = photo.getOriginalFilename();
+            String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            String savedFilename = UUID.randomUUID().toString() + extension;
+
+            Path destination = Paths.get(uploadPath + savedFilename);
+            photo.transferTo(destination);
+
+            return savedFilename;
+        } catch (IOException e) {
+            log.error("사진 파일 저장 실패", e);
+            throw new RuntimeException("사진 파일을 저장하는 중 오류가 발생했습니다.", e);
+        }
+    }
+
+    private void deletePhoto(String filename) {
+        if (filename == null) return;
+        try {
+            Path fileToDelete = Paths.get(uploadPath + filename);
+            Files.deleteIfExists(fileToDelete);
+        } catch (IOException e) {
+            log.error("사진 파일 삭제 실패: " + filename, e);
+        }
+    }
 
     private MedicalInfo dtoToMedicalInfo(SeniorRequestDto dto) {
         return MedicalInfo.builder()
@@ -106,7 +168,7 @@ public class SeniorService {
         		.build();
     }
 	
-    private Senior dtoToSenior(SeniorRequestDto dto) {
+    private Senior dtoToSenior(SeniorRequestDto dto, String photoFilename) {
         if (dto == null)
             return null;
         Guardian guardian = dtoToGuardian(dto);
@@ -114,6 +176,7 @@ public class SeniorService {
         Address address = dtoToAddress(dto);
         Senior senior = Senior.builder()
         		.name(dto.name())
+        		.photo(photoFilename)
         		.birthDate(dto.birthDate())
         		.sex(dto.sex())
         		.residence(dto.residence())
@@ -126,9 +189,9 @@ public class SeniorService {
         return senior;
     }
     
-    private void updateSenior(Senior senior, SeniorRequestDto dto) {
+    private void updateSenior(Senior senior, SeniorRequestDto dto, String newPhotoFilename) {
         Address address = dtoToAddress(dto);
-    	senior.updatePersonalInfo(dto.name(), dto.birthDate(), dto.sex(), dto.residence(),
+    	senior.updatePersonalInfo(dto.name(), newPhotoFilename, dto.birthDate(), dto.sex(), dto.residence(),
     			dto.phone(), address, dto.note());
     	senior.updateGuardianInfo(dtoToGuardian(dto));
     	senior.updateMedicalInfo(dtoToMedicalInfo(dto));
