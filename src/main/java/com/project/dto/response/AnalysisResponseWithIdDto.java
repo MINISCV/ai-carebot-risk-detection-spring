@@ -1,7 +1,10 @@
 package com.project.dto.response;
 
+import java.util.List;
+
 public record AnalysisResponseWithIdDto(
 		Long id,
-		AnalysisResponseDto dto
+		OverallResultPythonResponseDto overallResult,
+		List<DialogueAnalysisResponseDto> dialogueResult
 ) {
 }
