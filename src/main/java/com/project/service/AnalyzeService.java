@@ -61,7 +61,7 @@ public class AnalyzeService {
         List<DialogueAnalysisRequestDto> reqeustDialogues = new ArrayList<>();
 
         DateTimeFormatter csvFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:ss");
-        
+        boolean firstCheck = true;
         try (CSVReader reader = new CSVReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8))) {
             reader.readNext();
             String[] columns;
@@ -69,10 +69,20 @@ public class AnalyzeService {
                 String dollId = columns[0].trim();
                 String text = columns[1].trim();
                 String utteredAtCsv = columns[2].trim();
+                
                 if (dollId.isEmpty() || text.isEmpty() || utteredAtCsv.isEmpty()) {
                     log.warn("비었거나 잘못된 라인 스킵: doll_id={}, text={}, uttered_at={}", dollId, text, utteredAtCsv);
                     continue;
                 }
+                
+                if (firstCheck) {
+                    Doll doll = dollRepository.findByIdWithSenior(dollId)
+                            .orElseThrow(() -> new EntityNotFoundException("인형 " + dollId + "가 없음."));
+                    if(doll.getSenior() == null)
+                    	throw new EntityNotFoundException("인형에 할당된 시니어가 없음.");
+                    firstCheck = false;
+                }
+                
                 LocalDateTime dateTime = LocalDateTime.parse(utteredAtCsv, csvFormatter);
                 reqeustDialogues.add(new DialogueAnalysisRequestDto(dollId, text, dateTime));
             }
@@ -100,8 +110,6 @@ public class AnalyzeService {
         
         Doll doll = dollRepository.findByIdWithSenior(responseDollId)
                 .orElseThrow(() -> new EntityNotFoundException("인형 " + responseDollId + "가 없음."));
-        if(doll.getSenior() == null)
-        	throw new EntityNotFoundException("인형에 할당된 시니어가 없음.");
         
         ConfidenceScoresDto overallScoresDto = responseDto.overallResult().confidenceScores();
         ConfidenceScores overallScores = dtoToConfidenceScores(overallScoresDto);
@@ -137,7 +145,7 @@ public class AnalyzeService {
             overallResult.addDialogue(dialogue);
         }
 
-        AnalysisResponseWithIdDto result = new AnalysisResponseWithIdDto(overallResultRepository.save(overallResult).getId(), responseDto);
+        AnalysisResponseWithIdDto result = new AnalysisResponseWithIdDto(overallResultRepository.save(overallResult).getId(), responseDto.overallResult(), responseDto.dialogueResult());
         overallResult.getSenior().updateState(overallResult.getLabel());
         log.info("인형 {}에 대한 분석이 저장되었습니다.", responseDollId);
         return result;
