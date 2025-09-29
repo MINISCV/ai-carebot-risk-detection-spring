@@ -22,6 +22,7 @@ import com.project.dto.response.CustomPageDto;
 import com.project.dto.response.OverallResultListResponseDto;
 import com.project.service.AnalyzeService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -42,7 +43,7 @@ public class AnalyzeController {
     
     @GetMapping
     public ResponseEntity<CustomPageDto<OverallResultListResponseDto>> searchOverallResults(
-            @ModelAttribute OverallResultSearchCondition condition, Pageable pageable) {
+            @Valid @ModelAttribute OverallResultSearchCondition condition, Pageable pageable) {
         Page<OverallResultListResponseDto> resultsPage = analyzeService.searchOverallResults(condition, pageable);
         return ResponseEntity.ok(CustomPageDto.from(resultsPage));
     }

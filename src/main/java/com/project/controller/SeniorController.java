@@ -27,6 +27,7 @@ import com.project.dto.response.SeniorListResponseDto;
 import com.project.dto.response.SeniorResponseDto;
 import com.project.service.SeniorService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -39,7 +40,7 @@ public class SeniorController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SeniorResponseDto> createSenior(
-            @RequestPart("senior") SeniorRequestDto requestDto,
+            @Valid @RequestPart("senior") SeniorRequestDto requestDto,
             @RequestPart(value = "photo", required = false) MultipartFile photo) {
     	SeniorResponseDto senior = seniorService.createSenior(requestDto, photo);
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest()
@@ -51,7 +52,7 @@ public class SeniorController {
 	
     @GetMapping
     public ResponseEntity<CustomPageDto<SeniorListResponseDto>> searchSeniors(
-            @ModelAttribute SeniorSearchCondition condition, Pageable pageable) {
+            @Valid @ModelAttribute SeniorSearchCondition condition, Pageable pageable) {
         Page<SeniorListResponseDto> results = seniorService.searchSeniors(condition, pageable);
         return ResponseEntity.ok(CustomPageDto.from(results));
     }
