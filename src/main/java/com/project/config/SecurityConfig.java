@@ -45,6 +45,7 @@ public class SecurityConfig {
 		http.authorizeHttpRequests(auth -> auth
 				.requestMatchers(HttpMethod.POST, "/api/members").permitAll()
                 .requestMatchers("/api/login", "/api/refresh").permitAll()
+                .requestMatchers("/api/administrative-districts").permitAll() 
 				.anyRequest().hasRole("ADMIN")
 				);
         JWTAuthenticationFilter jwtAuthenticationFilter = new JWTAuthenticationFilter(
