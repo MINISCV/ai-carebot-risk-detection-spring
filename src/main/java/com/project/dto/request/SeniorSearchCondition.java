@@ -1,6 +1,8 @@
 package com.project.dto.request;
 
 import com.project.domain.analysis.Risk;
+import com.project.domain.senior.Gu;
+import com.project.domain.senior.Haengjeongdong;
 import com.project.domain.senior.Sex;
 
 import jakarta.validation.constraints.Min;
@@ -15,8 +17,8 @@ public class SeniorSearchCondition {
     private String name;
     private String phone;
     private Sex sex;
-    private String gu;
-    private String dong;
+    private Gu gu;
+    private Haengjeongdong dong;
     private Risk state;
     private String dollId;
     

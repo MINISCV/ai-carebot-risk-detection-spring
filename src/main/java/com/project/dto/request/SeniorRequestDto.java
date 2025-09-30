@@ -2,6 +2,8 @@ package com.project.dto.request;
 
 import java.time.LocalDate;
 
+import com.project.domain.senior.Gu;
+import com.project.domain.senior.Haengjeongdong;
 import com.project.domain.senior.Residence;
 import com.project.domain.senior.Sex;
 
@@ -33,10 +35,10 @@ public record SeniorRequestDto(
 
 		@NotBlank(message = "주소는 필수입니다.")
 		String address,
-		@NotBlank(message = "구 정보는 필수입니다.")
-		String gu,
-		@NotBlank(message = "동 정보는 필수입니다.")
-		String dong,
+		@NotNull(message = "구 정보는 필수입니다.")
+		Gu gu,
+		@NotNull(message = "동 정보는 필수입니다.")
+		Haengjeongdong dong,
 		
 		String note, 
 		
