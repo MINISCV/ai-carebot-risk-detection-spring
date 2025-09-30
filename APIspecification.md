@@ -1,14 +1,14 @@
 # **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석 API 명세서**
 
-**버전:** 1.0.0
+**버전:** 1.1.0
 
-**최종 수정일:** 2025-09-29
+**최종 수정일:** 2025-09-30
 
 ---
 
 ## **1. 개요**
 
-이 문서는 **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석**에서 제공하는 REST API의 명세에 대해 기술합니다. 본 API는 **회원, 인형, 시니어 관리, 대화 데이터 분석 및 대시보드** 기능을 제공하며, 개발자들이 애플리케이션과 서비스를 쉽게 연동할 수 있도록 돕습니다.
+이 문서는 **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석**에서 제공하는 REST API의 명세에 대해 기술합니다. 본 API는 **회원, 인형, 시니어 관리, 대화 데이터 분석, 대시보드 및 공통 코드** 기능을 제공하며, 개발자들이 애플리케이션과 서비스를 쉽게 연동할 수 있도록 돕습니다.
 
 ---
 
@@ -36,7 +36,7 @@
 
 ## **3. 인증**
 
-본 API는 로그인을 제외한 모든 요청에 대해 인증이 필요합니다. 인증 방식으로는 `JWT Bearer Token`을 사용하며, `ADMIN` 권한이 필요합니다.
+본 API는 로그인을 제외한 일부 공개 API를 제외하고 모든 요청에 대해 인증이 필요합니다. 인증 방식으로는 `JWT Bearer Token`을 사용하며, `ADMIN` 권한이 필요합니다.
 
 ### **3.1. JWT Bearer Token 인증**
 
@@ -242,7 +242,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 | 필드 | 타입 | 필수 | 설명 |
 | :--- | :--- | :--- | :--- |
-| `role` | `string` | Y | 변경할 회원의 역할 ("ROLE_ADMIN", "ROLE_MEMBER") |
+| `role` | `string` | Y | 변경할 회원의 역할. 허용 값: `"ROLE_ADMIN"`, `"ROLE_MEMBER"` |
 | `enabled` | `boolean`| Y | 계정 활성화 여부 |
 
 *   **Example Request Body:**
@@ -428,12 +428,12 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | `doll_id` | `string` | Y | 할당할 인형의 고유 ID |
 | `name` | `string` | Y | 시니어 이름 |
 | `birth_date` | `string` | Y | 생년월일 (YYYY-MM-DD) |
-| `sex` | `string` | Y | 성별 ("MALE" 또는 "FEMALE") |
-| `residence` | `string` | Y | 거주 형태 ("SINGLE_FAMILY_HOME", "MULTIPLEX_HOUSING", "MULTI_FAMILY_HOUSING", "APARTMENT") |
+| `sex` | `string` | Y | 성별. 허용 값: `"MALE"`, `"FEMALE"` |
+| `residence` | `string` | Y | 거주 형태. 허용 값: `"SINGLE_FAMILY_HOME"`, `"MULTIPLEX_HOUSING"`, `"MULTI_FAMILY_HOUSING"`, `"APARTMENT"` |
 | `phone` | `string` | Y | 연락처 (010-1234-5678 형식) |
 | `address` | `string` | Y | 주소 전체 |
-| `gu` | `string` | Y | 주소(구) |
-| `dong` | `string` | Y | 주소(동) |
+| `gu` | `string` | Y | 주소(구). `GET /api/administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. |
+| `dong` | `string` | Y | 주소(동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
 | `note` | `string` | N | 시니어 관련 특이사항 |
 | `guardian_name`|`string` | Y | 보호자 이름 |
 | `guardian_phone`|`string` | Y | 보호자 연락처 (010-1234-5678 형식) |
@@ -456,9 +456,9 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
     "state": "POSITIVE",
     "residence": "APARTMENT",
     "phone": "010-1234-5678",
-    "address": "서울시 강남구 테헤란로 123",
-    "gu": "강남구",
-    "dong": "삼성동",
+    "address": "대전광역시 동구 중앙동 123",
+    "gu": "동구",
+    "dong": "중앙동",
     "note": "거동이 불편하심",
     "guardian_name": "김보호",
     "guardian_phone": "010-8765-4321",
@@ -490,10 +490,10 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | `senior_id` | `long` | N | 시니어 ID |
 | `name` | `string` | N | 시니어 이름 (부분 일치) |
 | `phone` | `string` | N | 연락처 (부분 일치) |
-| `sex` | `string` | N | 성별 ("MALE", "FEMALE") |
-| `gu` | `string` | N | 주소(구) |
-| `dong` | `string` | N | 주소(동) |
-| `state` | `string` | N | 현재 상태 ("POSITIVE", "DANGER", "CRITICAL", "EMERGENCY") |
+| `sex` | `string` | N | 성별. 허용 값: `"MALE"`, `"FEMALE"` |
+| `gu` | `string` | N | 주소(구). `GET /api/administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. |
+| `dong` | `string` | N | 주소(동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
+| `state` | `string` | N | 현재 상태. 허용 값: `"POSITIVE"`, `"DANGER"`, `"CRITICAL"`, `"EMERGENCY"` |
 | `doll_id` | `string` | N | 할당된 인형 ID |
 | `age_group`| `integer` | N | 연령대 (예: 60, 70, 80, 100(100세 이상)) |
 
@@ -507,12 +507,12 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
             "name": "김어르신",
             "age": 80,
             "sex": "FEMALE",
-            "gu": "강남구",
-            "dong": "삼성동",
+            "gu": "동구",
+            "dong": "중앙동",
             "state": "POSITIVE",
             "doll_id": "doll-123",
             "phone": "010-1234-5678",
-            "created_at": "2025-09-29T10:00:00"
+            "created_at": "2025-09-30T10:00:00"
         }
     ],
     "page_number": 0,
@@ -548,9 +548,9 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
     "state": "POSITIVE",
     "residence": "APARTMENT",
     "phone": "010-1234-5678",
-    "address": "서울시 강남구 테헤란로 123",
-    "gu": "강남구",
-    "dong": "삼성동",
+    "address": "대전광역시 동구 중앙동 123",
+    "gu": "동구",
+    "dong": "중앙동",
     "note": "거동이 불편하심",
     "guardian_name": "김보호",
     "guardian_phone": "010-8765-4321",
@@ -721,12 +721,12 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | `size` | `integer` | N | 페이지당 항목 수 |
 | `senior_id`| `long` | N | 시니어 ID |
 | `name` | `string` | N | 시니어 이름 (부분 일치) |
-| `sex` | `string` | N | 성별 ("MALE", "FEMALE") |
-| `gu` | `string` | N | 주소(구) |
-| `dong` | `string` | N | 주소(동) |
+| `sex` | `string` | N | 성별. 허용 값: `"MALE"`, `"FEMALE"` |
+| `gu` | `string` | N | 주소(구). `GET /api/administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. |
+| `dong` | `string` | N | 주소(동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
 | `age_group`| `integer` | N | 연령대 (예: 60, 70, 80, 100(100세 이상)) |
 | `doll_id` | `string` | N | 인형 ID |
-| `label` | `string` | N | 분석 결과 레이블 ("POSITIVE", "DANGER", "CRITICAL", "EMERGENCY") |
+| `label` | `string` | N | 분석 결과 레이블. 허용 값: `"POSITIVE"`, `"DANGER"`, `"CRITICAL"`, `"EMERGENCY"` |
 | `start_date`| `string` | N | 검색 시작일 (YYYY-MM-DD) |
 | `end_date` | `string` | N | 검색 종료일 (YYYY-MM-DD) |
 
@@ -739,14 +739,14 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
             "overall_result_id": 1,
             "label": "DANGER",
             "summary": "부정적인 단어 사용 빈도가 높고, 외로움을 표현하는 문장이 발견되었습니다.",
-            "timestamp": "2025-09-29T11:00:00",
+            "timestamp": "2025-09-30T11:00:00",
             "doll_id": "doll-123",
             "senior_id": 1,
             "name": "김어르신",
             "age": 80,
             "sex": "FEMALE",
-            "gu": "강남구",
-            "dong": "삼성동"
+            "gu": "동구",
+            "dong": "중앙동"
         }
     ],
     "page_number": 0,
@@ -876,10 +876,10 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
             "senior_name": "박긴급",
             "age": 85,
             "sex": "MALE",
-            "gu": "서초구",
-            "dong": "방배동",
+            "gu": "서구",
+            "dong": "둔산1동",
             "summary": "도움을 요청하는 다급한 목소리가 감지되었습니다.",
-            "timestamp": "2025-09-29T10:30:00"
+            "timestamp": "2025-09-30T10:30:00"
         },
         {
             "overall_result_id": 8,
@@ -887,17 +887,147 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
             "senior_name": "이위험",
             "age": 78,
             "sex": "FEMALE",
-            "gu": "송파구",
-            "dong": "잠실동",
+            "gu": "유성구",
+            "dong": "온천1동",
             "summary": "가슴 통증을 호소하는 대화가 발견되었습니다.",
-            "timestamp": "2025-09-29T09:00:00"
+            "timestamp": "2025-09-30T09:00:00"
         }
     ]
 }
 ```
 
 ---
-## **7. API 엔드포인트 요약**
+### **7. 공통 (Common)**
+
+#### **7.1. `GET /administrative-districts` - 전체 행정구역 목록 조회**
+
+시니어 등록 및 검색에 사용 가능한 전체 '구'와 '행정동' 목록을 조회합니다.
+
+*   **Method:** `GET`
+*   **URL:** `/administrative-districts`
+*   **Description:** 프론트엔드에서 지역 선택 드롭다운 메뉴를 동적으로 생성하는 데 사용될 수 있습니다.
+*   **인증:** 불필요
+
+*   **Success Response (`200 OK`):**
+    *   '구'와 그에 속한 '행정동' 목록 배열을 반환합니다.
+```json
+[
+    {
+        "gu_code": "DAEDEOK_GU",
+        "gu_name": "대덕구",
+        "dong_list": [
+            { "dong_code": "DAEHWA_DONG", "dong_name": "대화동" },
+            { "dong_code": "DEOKAM_DONG", "dong_name": "덕암동" },
+            { "dong_code": "MOKSANG_DONG", "dong_name": "목상동" },
+            { "dong_code": "BEOB_1_DONG", "dong_name": "법1동" },
+            { "dong_code": "BEOB_2_DONG", "dong_name": "법2동" },
+            { "dong_code": "BIRAE_DONG", "dong_name": "비래동" },
+            { "dong_code": "SEOKBONG_DONG", "dong_name": "석봉동" },
+            { "dong_code": "SONGCHON_DONG", "dong_name": "송촌동" },
+            { "dong_code": "SINTANJIN_DONG", "dong_name": "신탄진동" },
+            { "dong_code": "OJEONG_DONG", "dong_name": "오정동" },
+            { "dong_code": "JUNGNI_DONG", "dong_name": "중리동" },
+            { "dong_code": "HOEDEOK_DONG", "dong_name": "회덕동" }
+        ]
+    },
+    {
+        "gu_code": "DONG_GU",
+        "gu_name": "동구",
+        "dong_list": [
+            { "dong_code": "GAYANG_1_DONG", "dong_name": "가양1동" },
+            { "dong_code": "GAYANG_2_DONG", "dong_name": "가양2동" },
+            { "dong_code": "DAE_DONG", "dong_name": "대동" },
+            { "dong_code": "DAECHEONG_DONG", "dong_name": "대청동" },
+            { "dong_code": "PANAM_1_DONG", "dong_name": "판암1동" },
+            { "dong_code": "PANAM_2_DONG", "dong_name": "판암2동" },
+            { "dong_code": "SAMSUNG_DONG", "dong_name": "삼성동" },
+            { "dong_code": "SANNAE_DONG", "dong_name": "산내동" },
+            { "dong_code": "SEONGNAM_DONG", "dong_name": "성남동" },
+            { "dong_code": "SININ_DONG", "dong_name": "신인동" },
+            { "dong_code": "YONGUN_DONG", "dong_name": "용운동" },
+            { "dong_code": "YONGJEON_DONG", "dong_name": "용전동" },
+            { "dong_code": "JAYANG_DONG", "dong_name": "자양동" },
+            { "dong_code": "JUNGANG_DONG", "dong_name": "중앙동" },
+            { "dong_code": "HYO_DONG", "dong_name": "효 동" },
+            { "dong_code": "HONGDO_DONG", "dong_name": "홍도동" }
+        ]
+    },
+    {
+        "gu_code": "SEO_GU",
+        "gu_name": "서구",
+        "dong_list": [
+            { "dong_code": "GASUWON_DONG", "dong_name": "가수원동" },
+            { "dong_code": "GAJANG_DONG", "dong_name": "가장동" },
+            { "dong_code": "GALMA_1_DONG", "dong_name": "갈마1동" },
+            { "dong_code": "GALMA_2_DONG", "dong_name": "갈마2동" },
+            { "dong_code": "GWANJEO_1_DONG", "dong_name": "관저1동" },
+            { "dong_code": "GWANJEO_2_DONG", "dong_name": "관저2동" },
+            { "dong_code": "GOEJEONG_DONG", "dong_name": "괴정동" },
+            { "dong_code": "GISEONG_DONG", "dong_name": "기성동" },
+            { "dong_code": "NAE_DONG", "dong_name": "내동" },
+            { "dong_code": "DOAN_DONG", "dong_name": "도안동" },
+            { "dong_code": "DOMA_1_DONG", "dong_name": "도마1동" },
+            { "dong_code": "DOMA_2_DONG", "dong_name": "도마2동" },
+            { "dong_code": "DUNSAN_1_DONG", "dong_name": "둔산1동" },
+            { "dong_code": "DUNSAN_2_DONG", "dong_name": "둔산2동" },
+            { "dong_code": "DUNSAN_3_DONG", "dong_name": "둔산3동" },
+            { "dong_code": "MANNYEON_DONG", "dong_name": "만년동" },
+            { "dong_code": "BYEON_DONG", "dong_name": "변동" },
+            { "dong_code": "BOKSU_DONG", "dong_name": "복수동" },
+            { "dong_code": "YONGMUN_DONG", "dong_name": "용문동" },
+            { "dong_code": "WOLPYEONG_1_DONG", "dong_name": "월평1동" },
+            { "dong_code": "WOLPYEONG_2_DONG", "dong_name": "월평2동" },
+            { "dong_code": "WOLPYEONG_3_DONG", "dong_name": "월평3동" },
+            { "dong_code": "JEONGLIM_DONG", "dong_name": "정림동" },
+            { "dong_code": "TANBANG_DONG", "dong_name": "탄방동" }
+        ]
+    },
+    {
+        "gu_code": "YUSEONG_GU",
+        "gu_name": "유성구",
+        "dong_list": [
+            { "dong_code": "GWANPYEONG_DONG", "dong_name": "관평동" },
+            { "dong_code": "GUJEUK_DONG", "dong_name": "구즉동" },
+            { "dong_code": "NOEUN_1_DONG", "dong_name": "노은1동" },
+            { "dong_code": "NOEUN_2_DONG", "dong_name": "노은2동" },
+            { "dong_code": "NOEUN_3_DONG", "dong_name": "노은3동" },
+            { "dong_code": "SANGDAE_DONG", "dong_name": "상대동" },
+            { "dong_code": "SINSEONG_DONG", "dong_name": "신성동" },
+            { "dong_code": "ONCHEON_1_DONG", "dong_name": "온천1동" },
+            { "dong_code": "ONCHEON_2_DONG", "dong_name": "온천2동" },
+            { "dong_code": "WONSINHEUNG_DONG", "dong_name": "원신흥동" },
+            { "dong_code": "JEONMIN_DONG", "dong_name": "전민동" },
+            { "dong_code": "JINJAM_DONG", "dong_name": "진잠동" },
+            { "dong_code": "HAKHA_DONG", "dong_name": "학하동" }
+        ]
+    },
+    {
+        "gu_code": "JUNG_GU",
+        "gu_name": "중구",
+        "dong_list": [
+            { "dong_code": "DAESA_DONG", "dong_name": "대사동" },
+            { "dong_code": "DAEHEUNG_DONG", "dong_name": "대흥동" },
+            { "dong_code": "MOK_DONG", "dong_name": "목동" },
+            { "dong_code": "MUNCHANG_DONG", "dong_name": "문창동" },
+            { "dong_code": "MUNHWA_1_DONG", "dong_name": "문화1동" },
+            { "dong_code": "MUNHWA_2_DONG", "dong_name": "문화2동" },
+            { "dong_code": "BUSA_DONG", "dong_name": "부사동" },
+            { "dong_code": "SANSEONG_DONG", "dong_name": "산성동" },
+            { "dong_code": "SEOKGYO_DONG", "dong_name": "석교동" },
+            { "dong_code": "ORYU_DONG", "dong_name": "오류동" },
+            { "dong_code": "YONGDU_DONG", "dong_name": "용두동" },
+            { "dong_code": "YUCHEON_1_DONG", "dong_name": "유천1동" },
+            { "dong_code": "YUCHEON_2_DONG", "dong_name": "유천2동" },
+            { "dong_code": "EUNHAENGSEONHWA_DONG", "dong_name": "은행선화동" },
+            { "dong_code": "JUNGCHON_DONG", "dong_name": "중촌동" },
+            { "dong_code": "TAEPYEONG_1_DONG", "dong_name": "태평1동" },
+            { "dong_code": "TAEPYEONG_2_DONG", "dong_name": "태평2동" }
+        ]
+    }
+]
+```
+---
+### **8. API 엔드포인트 요약**
 
 | 기능 | 메서드 | 엔드포인트 | 인증 | 주요 요청 | 주요 응답 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
@@ -928,5 +1058,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | 분석 결과 삭제 | `DELETE` | `/api/analyze/{id}` | ADMIN | Path: `id` | `204 No Content` |
 | **대시보드** | | | | | |
 | 대시보드 데이터 조회 | `GET` | `/api/dashboard` | ADMIN | - | `Dashboard` 데이터 객체 |
+| **공통** | | | | | |
+| 행정구역 목록 조회 | `GET` | `/api/administrative-districts`| 불필요 | - | `Gu` 및 `Dong` 목록 |
 
 ---
