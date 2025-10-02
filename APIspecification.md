@@ -1,8 +1,8 @@
 # **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석 API 명세서**
 
-**버전:** 1.1.0
+**버전:** 1.2.0
 
-**최종 수정일:** 2025-09-30
+**최종 수정일:** 2025-10-02
 
 ---
 
@@ -434,7 +434,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | `phone` | `string` | Y | 연락처 (010-1234-5678 형식) |
 | `address` | `string` | Y | 주소 전체 |
 | `gu` | `string` | Y | 주소(구). `GET /api/administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. |
-| `dong` | `string` | Y | 주소(동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
+| `dong` | `string` | Y | 주소(법정동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
 | `note` | `string` | N | 시니어 관련 특이사항 |
 | `guardian_name`|`string` | Y | 보호자 이름 |
 | `guardian_phone`|`string` | Y | 보호자 연락처 (010-1234-5678 형식) |
@@ -493,7 +493,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | `phone` | `string` | N | 연락처 (부분 일치) |
 | `sex` | `string` | N | 성별. 허용 값: `"MALE"`, `"FEMALE"` |
 | `gu` | `string` | N | 주소(구). `GET /api/administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. |
-| `dong` | `string` | N | 주소(동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
+| `dong` | `string` | N | 주소(법정동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
 | `state` | `string` | N | 현재 상태. 허용 값: `"POSITIVE"`, `"DANGER"`, `"CRITICAL"`, `"EMERGENCY"` |
 | `doll_id` | `string` | N | 할당된 인형 ID |
 | `age_group`| `integer` | N | 연령대 (예: 60, 70, 80, 100(100세 이상)) |
@@ -724,7 +724,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | `name` | `string` | N | 시니어 이름 (부분 일치) |
 | `sex` | `string` | N | 성별. 허용 값: `"MALE"`, `"FEMALE"` |
 | `gu` | `string` | N | 주소(구). `GET /api/administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. |
-| `dong` | `string` | N | 주소(동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
+| `dong` | `string` | N | 주소(법정동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
 | `age_group`| `integer` | N | 연령대 (예: 60, 70, 80, 100(100세 이상)) |
 | `doll_id` | `string` | N | 인형 ID |
 | `label` | `string` | N | 분석 결과 레이블. 허용 값: `"POSITIVE"`, `"DANGER"`, `"CRITICAL"`, `"EMERGENCY"` |
@@ -900,9 +900,9 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 ---
 ### **7. 공통 (Common)**
 
-#### **7.1. `GET /administrative-districts` - 전체 행정구역 목록 조회**
+#### **7.1. `GET /administrative-districts` - 전체 법정구역 목록 조회**
 
-시니어 등록 및 검색에 사용 가능한 전체 '구'와 '행정동' 목록을 조회합니다.
+시니어 등록 및 검색에 사용 가능한 전체 '구'와 '법정동' 목록을 조회합니다.
 
 *   **Method:** `GET`
 *   **URL:** `/administrative-districts`
@@ -910,7 +910,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 *   **인증:** 불필요
 
 *   **Success Response (`200 OK`):**
-    *   '구'와 그에 속한 '행정동' 목록 배열을 반환합니다.
+    *   '구'와 그에 속한 '법정동' 목록 배열을 반환합니다.
 ```json
 [
     {
@@ -1060,6 +1060,6 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | **대시보드** | | | | | |
 | 대시보드 데이터 조회 | `GET` | `/api/dashboard` | ADMIN | - | `Dashboard` 데이터 객체 |
 | **공통** | | | | | |
-| 행정구역 목록 조회 | `GET` | `/api/administrative-districts`| 불필요 | - | `Gu` 및 `Dong` 목록 |
+| 법정구역 목록 조회 | `GET` | `/api/administrative-districts`| 불필요 | - | '구' 및 '법정동' 목록 |
 
 ---
