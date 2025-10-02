@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.project.domain.senior.Gu;
-import com.project.domain.senior.Haengjeongdong;
+import com.project.domain.senior.Beopjeongdong;
 import com.project.dto.response.DongDto;
 import com.project.dto.response.GuDto;
 
@@ -22,7 +22,7 @@ public class AdministrativeDistrictService {
     public List<GuDto> getAdministrativeDistricts() {
         return Arrays.stream(Gu.values())
                 .map(gu -> {
-                    List<DongDto> dongDtos = Haengjeongdong.findAllByGu(gu).stream()
+                    List<DongDto> dongDtos = Beopjeongdong.findAllByGu(gu).stream()
                             .map(dong -> new DongDto(dong.name(), dong.getKoreanName()))
                             .collect(Collectors.toList());
 

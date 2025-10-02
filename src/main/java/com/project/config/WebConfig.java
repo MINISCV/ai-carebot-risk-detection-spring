@@ -7,7 +7,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.project.config.converter.StringToGuConverter;
-import com.project.config.converter.StringToHaengjeongdongConverter;
+import com.project.config.converter.StringToBeopjeongdongConverter;
 import com.project.config.converter.StringToResidenceConverter;
 import com.project.config.converter.StringToRiskConverter;
 import com.project.config.converter.StringToSexConverter;
@@ -30,6 +30,6 @@ public class WebConfig implements WebMvcConfigurer {
         registry.addConverter(new StringToSexConverter());
         registry.addConverter(new StringToResidenceConverter());
         registry.addConverter(new StringToGuConverter());
-        registry.addConverter(new StringToHaengjeongdongConverter());
+        registry.addConverter(new StringToBeopjeongdongConverter());
     }
 }

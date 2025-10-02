@@ -6,7 +6,7 @@ import java.time.Period;
 
 import com.project.domain.analysis.Risk;
 import com.project.domain.senior.Gu;
-import com.project.domain.senior.Haengjeongdong;
+import com.project.domain.senior.Beopjeongdong;
 import com.project.domain.senior.Sex;
 import com.querydsl.core.annotations.QueryProjection;
 
@@ -25,7 +25,7 @@ public record OverallResultListResponseDto(
 ) {
     @QueryProjection
     public OverallResultListResponseDto(Long overallResultId, Risk label, String summary, LocalDateTime timestamp, 
-    		String dollId, Long seniorId, String name, LocalDate birthDate, Sex sex, Gu gu, Haengjeongdong dong) {
+    		String dollId, Long seniorId, String name, LocalDate birthDate, Sex sex, Gu gu, Beopjeongdong dong) {
         this(
             overallResultId,
             label,

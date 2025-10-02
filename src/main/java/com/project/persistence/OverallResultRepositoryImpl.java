@@ -16,7 +16,7 @@ import org.springframework.util.StringUtils;
 
 import com.project.domain.analysis.Risk;
 import com.project.domain.senior.Gu;
-import com.project.domain.senior.Haengjeongdong;
+import com.project.domain.senior.Beopjeongdong;
 import com.project.domain.senior.Sex;
 import com.project.dto.request.OverallResultSearchCondition;
 import com.project.dto.response.OverallResultListResponseDto;
@@ -148,7 +148,7 @@ public class OverallResultRepositoryImpl implements OverallResultRepositoryCusto
         return gu != null ? senior.address.gu.eq(gu) : null;
     }
 
-    private BooleanExpression dongEq(Haengjeongdong dong) {
+    private BooleanExpression dongEq(Beopjeongdong dong) {
         return dong != null ? senior.address.dong.eq(dong) : null;
     }
     

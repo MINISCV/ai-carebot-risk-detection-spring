@@ -6,7 +6,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import com.project.domain.analysis.Risk;
 import com.project.domain.senior.Gu;
-import com.project.domain.senior.Haengjeongdong;
+import com.project.domain.senior.Beopjeongdong;
 import com.project.domain.senior.Sex;
 
 import jakarta.validation.constraints.Min;
@@ -22,7 +22,7 @@ public class OverallResultSearchCondition {
     private String name;
     private Sex sex;
     private Gu gu;
-    private Haengjeongdong dong;
+    private Beopjeongdong dong;
     
     @Min(value = 1, message = "나이 그룹은 1 이상의 값이어야 합니다.")
     private Integer ageGroup;

@@ -18,10 +18,10 @@ public class Address {
 	private Gu gu;
 
 	@Enumerated(EnumType.STRING)
-	private Haengjeongdong dong;
+	private Beopjeongdong dong;
     
     @Builder
-    public Address(String address, Gu gu, Haengjeongdong dong) {
+    public Address(String address, Gu gu, Beopjeongdong dong) {
         this.address = address;
         this.gu = gu;
         this.dong = dong;

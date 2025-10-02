@@ -1,16 +1,16 @@
 package com.project.config.converter;
 
-import com.project.domain.senior.Haengjeongdong;
+import com.project.domain.senior.Beopjeongdong;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
 @Component
-public class StringToHaengjeongdongConverter implements Converter<String, Haengjeongdong> {
+public class StringToBeopjeongdongConverter implements Converter<String, Beopjeongdong> {
     @Override
-    public Haengjeongdong convert(String source) {
+    public Beopjeongdong convert(String source) {
         if (source == null || source.isEmpty()) {
             return null;
         }
-        return Haengjeongdong.from(source);
+        return Beopjeongdong.from(source);
     }
 }
