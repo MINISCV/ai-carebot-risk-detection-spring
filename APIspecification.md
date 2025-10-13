@@ -644,55 +644,73 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
     *   분석 결과를 담은 JSON 객체와 생성된 리소스의 ID를 반환합니다.
 ```json
 {
-    "id": 1,
     "overall_result": {
-        "doll_id": "doll-123",
-        "dialogue_count": 2,
-        "char_length": 22,
-        "label": "DANGER",
+        "doll_id": "1",
+        "dialogue_count": 3,
+        "char_length": 32,
+        "label": "positive",
         "confidence_scores": {
-            "positive": 0.1,
-            "danger": 0.7,
-            "critical": 0.15,
-            "emergency": 0.05
+            "positive": "0.9907",
+            "danger": "0.0056",
+            "critical": "0.0029",
+            "emergency": "0.0010"
         },
-        "full_text": "오늘 날씨가 좋네 점심은 뭘 먹을까?",
+        "treatment_plan": "특별한 위험 징후는 없습니다. 지속적으로 모니터링해 주세요.",
+        "full_text": "오늘 너무 덥네 지금 몇 시야 조금 있다가 밥 먹어야 겠다",
         "reason": {
             "evidence": [
                 {
-                    "seq": 2,
-                    "text": "점심은 뭘 먹을까?",
-                    "score": 0.6
+                    "seq": 0,
+                    "text": "오늘 너무 덥네",
+                    "score": "0.9907"
+                },
+                {
+                    "seq": 1,
+                    "text": "지금 몇 시야",
+                    "score": "0.9902"
                 }
             ],
-            "summary": "부정적인 단어 사용 빈도가 높고, 외로움을 표현하는 문장이 발견되었습니다."
+            "summary": "오늘 너무 덥다고 말하며 밥을 먹어야겠다고 함"
         }
     },
     "dialogue_result": [
         {
-            "seq": 1,
-            "doll_id": "doll-123",
-            "text": "오늘 날씨가 좋네",
-            "uttered_at": "2025-09-23T10:30:00",
-            "label": "POSITIVE",
+            "seq": 0,
+            "doll_id": "1",
+            "text": "오늘 너무 덥네",
+            "uttered_at": "2025-09-22T10:20:30",
+            "label": "positive",
             "confidence_scores": {
-                "positive": 0.9,
-                "danger": 0.05,
-                "critical": 0.03,
-                "emergency": 0.02
+                "positive": "0.9907",
+                "danger": "0.0056",
+                "critical": "0.0029",
+                "emergency": "0.0010"
+            }
+        },
+        {
+            "seq": 1,
+            "doll_id": "1",
+            "text": "지금 몇 시야",
+            "uttered_at": "2025-09-22T10:20:40",
+            "label": "positive",
+            "confidence_scores": {
+                "positive": "0.9902",
+                "danger": "0.0027",
+                "critical": "0.0055",
+                "emergency": "0.0018"
             }
         },
         {
             "seq": 2,
-            "doll_id": "doll-123",
-            "text": "점심은 뭘 먹을까?",
-            "uttered_at": "2025-09-23T12:00:15",
-            "label": "DANGER",
+            "doll_id": "1",
+            "text": "조금 있다가 밥 먹어야 겠다",
+            "uttered_at": "2025-09-22T10:20:50",
+            "label": "positive",
             "confidence_scores": {
-                "positive": 0.2,
-                "danger": 0.6,
-                "critical": 0.1,
-                "emergency": 0.1
+                "positive": "0.9897",
+                "danger": "0.0041",
+                "critical": "0.0050",
+                "emergency": "0.0011"
             }
         }
     ]
@@ -793,6 +811,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
         "점심은 뭘 먹을까?"
     ],
     "summary": "부정적인 단어 사용 빈도가 높고, 외로움을 표현하는 문장이 발견되었습니다.",
+    "treatment_plan": "주의가 필요한 발화가 감지되었습니다. 반복될 경우 주기적인 안부 확인 및 말벗 서비스 제공을 권장합니다.",
     "dialogues": [
         {
             "id": 1,
