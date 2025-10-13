@@ -11,11 +11,14 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
 
 @Configuration
+@RequiredArgsConstructor
 public class AppConfig {
 	@PersistenceContext
     private EntityManager entityManager;
+	private final PythonApiErrorHandler pythonApiErrorHandler;
 
 	@Bean
     JPAQueryFactory jpaQueryFactory() {
@@ -25,6 +28,7 @@ public class AppConfig {
 	@Bean
 	RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder.requestFactory(() -> new BufferingClientHttpRequestFactory(new SimpleClientHttpRequestFactory()))
+        		.errorHandler(pythonApiErrorHandler)
                 .build();
     }
 }

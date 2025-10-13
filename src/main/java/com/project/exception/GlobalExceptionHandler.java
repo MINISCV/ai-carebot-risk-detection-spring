@@ -121,6 +121,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNSUPPORTED_MEDIA_TYPE).body(error);
     }
     
+    @ExceptionHandler(PythonApiException.class)
+    public ResponseEntity<Map<String, String>> handlePythonApiException(PythonApiException ex) {
+        log.error("Python 분석 서버 API 오류: {}", ex.getMessage());
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return ResponseEntity.status(ex.getStatus()).body(error);
+    }
+    
     @ExceptionHandler(ResourceAccessException.class)
     public ResponseEntity<Map<String, String>> handleResourceAccessException(ResourceAccessException ex) {
         log.error("외부 서비스 연결 실패: {}", ex.getMessage());

@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -86,6 +87,8 @@ public class AnalyzeService {
                 LocalDateTime dateTime = LocalDateTime.parse(utteredAtCsv, csvFormatter);
                 reqeustDialogues.add(new DialogueAnalysisRequestDto(dollId, text, dateTime));
             }
+        } catch (DateTimeParseException e) {
+            throw new InvalidFileException("날짜 포맷은 YYYY-MM-DD HH:MM:SS이어야 합니다.", e);
         } catch (CsvValidationException e) {
             throw new InvalidFileException("잘못된 형식의 CSV 파일입니다.", e);
         } catch (IOException e) {
