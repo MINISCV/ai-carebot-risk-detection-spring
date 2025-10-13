@@ -19,10 +19,11 @@ public record RecentUrgentResultDto(
         String gu,
         String dong,
         String summary,
+        String treatmentPlan,
         LocalDateTime timestamp
 ) {
     @QueryProjection
-    public RecentUrgentResultDto(Long overallResultId, Risk label, String seniorName, LocalDate birthDate, Sex sex, Gu gu, Beopjeongdong dong, String summary, LocalDateTime timestamp) {
+    public RecentUrgentResultDto(Long overallResultId, Risk label, String seniorName, LocalDate birthDate, Sex sex, Gu gu, Beopjeongdong dong, String summary, String treatmentPlan, LocalDateTime timestamp) {
         this(
             overallResultId,
             label,
@@ -32,6 +33,7 @@ public record RecentUrgentResultDto(
             gu.getKoreanName(),
             dong.getKoreanName(),
             summary,
+            treatmentPlan,
             timestamp
         );
     }

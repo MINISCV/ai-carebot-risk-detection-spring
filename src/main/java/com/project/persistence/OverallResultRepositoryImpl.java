@@ -108,6 +108,7 @@ public class OverallResultRepositoryImpl implements OverallResultRepositoryCusto
                         senior.address.gu,
                         senior.address.dong,
                         overallResult.reason.summary,
+                        overallResult.treatmentPlan,
                         overallResult.timestamp
                 ))
                 .from(overallResult)
