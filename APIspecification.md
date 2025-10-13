@@ -644,6 +644,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
     *   분석 결과를 담은 JSON 객체와 생성된 리소스의 ID를 반환합니다.
 ```json
 {
+    "id": 10053,
     "overall_result": {
         "doll_id": "1",
         "dialogue_count": 3,
