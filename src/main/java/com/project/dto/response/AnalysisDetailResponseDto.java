@@ -18,6 +18,7 @@ public record AnalysisDetailResponseDto(
         ConfidenceScoresDto confidenceScores,
         List<String> reasons,
         String summary,
+        String treatmentPlan,
 
         List<DialogueDetailDto> dialogues
 ) {
@@ -42,6 +43,7 @@ public record AnalysisDetailResponseDto(
                 scoresDto,
                 overallResult.getReason().getReasons(),
                 overallResult.getReason().getSummary(),
+                overallResult.getTreatmentPlan(),
                 dialogueDtos
         );
     }

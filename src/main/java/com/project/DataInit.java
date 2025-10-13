@@ -77,6 +77,13 @@ public class DataInit implements ApplicationRunner {
                 "긴급 상황으로 의심되는 %s님의 발언이 포착되었습니다. 즉각적인 확인이 필요합니다.",
                 "심각한 통증을 호소하는 %s님의 대화가 발견되었습니다. 건강 상태 확인이 시급합니다."
             };
+            
+            String[] treatmentPlanTemplates = {
+            	    "특별한 위험 징후는 없습니다. 지속적으로 모니터링해 주세요.",
+            	    "주의가 필요한 발화가 감지되었습니다. 반복될 경우 주기적인 안부 확인 및 말벗 서비스 제공을 권장합니다.",
+            	    "위험도가 높은 발화가 감지되었습니다. 상황에 따라 관리자가 직접 통화하여 심리적 안정을 유도하고, 방문 상담이 필요할 수 있습니다.",
+            	    "매우 위급한 발화가 감지되었습니다. 신속하게 상황을 파악한 후 관계 기관에 신고하거나 적극적인 대응이 요구됩니다."
+            	};
 
             List<Senior> seniorBatchList = new ArrayList<>();
             for (int i = 1; i <= TOTAL_COUNT; i++) {
@@ -98,11 +105,31 @@ public class DataInit implements ApplicationRunner {
                 for (int j = 0; j < overallResultCount; j++) {
                     int riskScore = random.nextInt(100);
                     Risk overallRisk;
-                    if (riskScore < 60) overallRisk = Risk.POSITIVE; else if (riskScore < 85) overallRisk = Risk.DANGER; else if (riskScore < 95) overallRisk = Risk.CRITICAL; else overallRisk = Risk.EMERGENCY;
+                    String treatmentPlan;
+                    if (riskScore < 60) {
+                    	overallRisk = Risk.POSITIVE;
+                    	treatmentPlan = treatmentPlanTemplates[0];
+                    } else if (riskScore < 85) {
+                    	overallRisk = Risk.DANGER;
+                    	treatmentPlan = treatmentPlanTemplates[1];
+                    } else if (riskScore < 95) {
+                    	overallRisk = Risk.CRITICAL;
+                    	treatmentPlan = treatmentPlanTemplates[2];
+                    } else {
+                    	overallRisk = Risk.EMERGENCY;
+                    	treatmentPlan = treatmentPlanTemplates[3];
+                    }
                     if (j == 0) latestRisk = overallRisk;
                     ConfidenceScores overallScores = createConfidenceScores(overallRisk);
                     Reason reason = Reason.builder().reasons(Collections.singletonList(overallRisk.name() + " 위험으로 판단되는 대화가 발견되었습니다.")).summary(String.format(summaryTemplates[random.nextInt(summaryTemplates.length)], seniorName)).build();
-                    OverallResult overallResult = OverallResult.builder().senior(senior).doll(senior.getDoll()).label(overallRisk).confidenceScores(overallScores).reason(reason).build();
+                    OverallResult overallResult = OverallResult.builder()
+                    		.senior(senior)
+                    		.doll(senior.getDoll())
+                    		.label(overallRisk)
+                    		.confidenceScores(overallScores)
+                    		.reason(reason)
+                    		.treatmentPlan(treatmentPlan)
+                    		.build();
                     int dialogueCount = random.nextInt(8) + 5;
                     for (int k = 0; k < dialogueCount; k++) {
                         Risk dialogueRisk = getBiasedDialogueRisk(overallRisk, random);

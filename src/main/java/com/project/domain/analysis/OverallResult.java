@@ -53,17 +53,20 @@ public class OverallResult {
     
     @Embedded
     private Reason reason;
+    
+    private String treatmentPlan;
         
     @OneToMany(mappedBy = "overallResult", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Dialogue> dialogues = new ArrayList<>();
     
     @Builder
-    public OverallResult(Doll doll, Senior senior, Risk label, ConfidenceScores confidenceScores, Reason reason) {
+    public OverallResult(Doll doll, Senior senior, Risk label, ConfidenceScores confidenceScores, Reason reason, String treatmentPlan) {
         this.doll = doll;
         this.senior = senior;
         this.label = label;
         this.confidenceScores = confidenceScores;
         this.reason = reason;
+        this.treatmentPlan = treatmentPlan;
     }
     
     public void addDialogue(Dialogue dialogue) {

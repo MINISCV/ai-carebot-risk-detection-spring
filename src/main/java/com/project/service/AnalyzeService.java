@@ -129,6 +129,7 @@ public class AnalyzeService {
                 .label(responseDto.overallResult().label())
                 .confidenceScores(overallScores)
                 .reason(reason)
+                .treatmentPlan(responseDto.overallResult().treatmentPlan())
                 .build();
         
         for (DialogueAnalysisResponseDto dialogueDto : responseDto.dialogueResult()) {

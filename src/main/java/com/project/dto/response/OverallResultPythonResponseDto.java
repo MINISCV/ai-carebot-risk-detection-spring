@@ -10,6 +10,7 @@ public record OverallResultPythonResponseDto(
 		int charLength,
 		Risk label,
 		ConfidenceScoresDto confidenceScores,
+		String treatmentPlan,
 		String fullText, 
 		ReasonDto reason
 ) {
