@@ -8,6 +8,7 @@ import java.util.Map;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -21,7 +22,6 @@ import com.project.util.JWTUtil;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -54,11 +54,14 @@ public class JWTAuthenticationFilter extends UsernamePasswordAuthenticationFilte
 		String accessToken = JWTUtil.getJWT(user.getUsername());
 		response.addHeader(HttpHeaders.AUTHORIZATION, accessToken);
 		String refreshToken = JWTUtil.getRefreshJWT(user.getUsername());
-		Cookie cookie = new Cookie("refresh_token", refreshToken);
-		cookie.setHttpOnly(true);
-		cookie.setPath("/");
-		cookie.setMaxAge(60 * 60 * 24 * 7);
-		response.addCookie(cookie);
+		ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", refreshToken)
+	            .httpOnly(true)
+	            .path("/")
+	            .maxAge(60 * 60 * 24 * 7)
+	            .sameSite("None")
+	            .secure(true)
+	            .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 		response.setStatus(HttpStatus.OK.value());
 	}
 
