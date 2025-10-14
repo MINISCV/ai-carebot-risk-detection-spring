@@ -35,6 +35,7 @@ public record SeniorRequestDto(
 
 		@NotBlank(message = "주소는 필수입니다.")
 		String address,
+		String addressDetail,
 		@NotNull(message = "구 정보는 필수입니다.")
 		Gu gu,
 		@NotNull(message = "동 정보는 필수입니다.")

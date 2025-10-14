@@ -92,7 +92,8 @@ public class DataInit implements ApplicationRunner {
                 Gu randomGu = Gu.values()[random.nextInt(Gu.values().length)];
                 List<Beopjeongdong> dongsInGu = Beopjeongdong.findAllByGu(randomGu);
                 Beopjeongdong randomDong = dongsInGu.get(random.nextInt(dongsInGu.size()));
-                Address address = Address.builder().address("대전광역시 " + randomGu.getKoreanName() + " " + randomDong.getKoreanName() + " " + (random.nextInt(200) + 1) + "번지").gu(randomGu).dong(randomDong).build();
+                Address address = Address.builder().address("대전광역시 " + randomGu.getKoreanName() + " " + randomDong.getKoreanName() + " " + (random.nextInt(200) + 1) + "번지")
+                		.detail((random.nextInt(30) + 10) + "동 " + (random.nextInt(20) + 1) + "0" + (random.nextInt(4) + 1) + "호").gu(randomGu).dong(randomDong).build();
                 String disease = diseases[random.nextInt(diseases.length)];
                 String medication = disease == null ? null : medications[random.nextInt(medications.length)];
                 MedicalInfo medicalInfo = MedicalInfo.builder().diseases(disease).medications(medication).note(disease == null ? "특이사항 없음" : "정기적인 관리 필요").build();

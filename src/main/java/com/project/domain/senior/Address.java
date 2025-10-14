@@ -13,6 +13,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Address {
 	private String address;
+	private String detail;
 	
 	@Enumerated(EnumType.STRING)
 	private Gu gu;
@@ -21,8 +22,9 @@ public class Address {
 	private Beopjeongdong dong;
     
     @Builder
-    public Address(String address, Gu gu, Beopjeongdong dong) {
+    public Address(String address, String detail, Gu gu, Beopjeongdong dong) {
         this.address = address;
+        this.detail = detail;
         this.gu = gu;
         this.dong = dong;
     }

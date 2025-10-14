@@ -176,6 +176,7 @@ public class SeniorService {
     private Address dtoToAddress(SeniorRequestDto dto) {
         return Address.builder()
         		.address(dto.address())
+        		.detail(dto.addressDetail())
         		.gu(dto.gu())
         		.dong(dto.dong())
         		.build();

@@ -433,6 +433,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | `residence` | `string` | Y | 거주 형태. 허용 값: `"SINGLE_FAMILY_HOME"`, `"MULTIPLEX_HOUSING"`, `"MULTI_FAMILY_HOUSING"`, `"APARTMENT"` |
 | `phone` | `string` | Y | 연락처 (010-1234-5678 형식) |
 | `address` | `string` | Y | 주소 전체 |
+| `address_detail` | `string` | N | 상세 주소 (예: 101동 1204호) |
 | `gu` | `string` | Y | 주소(구). `GET /api/administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. |
 | `dong` | `string` | Y | 주소(법정동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
 | `note` | `string` | N | 시니어 관련 특이사항 |
@@ -458,6 +459,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
     "residence": "APARTMENT",
     "phone": "010-1234-5678",
     "address": "대전광역시 동구 중앙동 123",
+    "address_detail": "행복아파트 101동 1204호",
     "gu": "동구",
     "dong": "중앙동",
     "note": "거동이 불편하심",
@@ -550,6 +552,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
     "residence": "APARTMENT",
     "phone": "010-1234-5678",
     "address": "대전광역시 동구 중앙동 123",
+    "address_detail": "행복아파트 101동 1204호",
     "gu": "동구",
     "dong": "중앙동",
     "note": "거동이 불편하심",
