@@ -9,52 +9,36 @@ import java.util.Random;
 
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Component;
 
 import com.project.domain.analysis.ConfidenceScores;
 import com.project.domain.analysis.Dialogue;
 import com.project.domain.analysis.OverallResult;
 import com.project.domain.analysis.Reason;
 import com.project.domain.analysis.Risk;
-import com.project.domain.member.Member;
-import com.project.domain.member.Role;
 import com.project.domain.senior.Address;
+import com.project.domain.senior.Beopjeongdong;
 import com.project.domain.senior.Doll;
 import com.project.domain.senior.Gu;
 import com.project.domain.senior.Guardian;
-import com.project.domain.senior.Beopjeongdong;
 import com.project.domain.senior.MedicalInfo;
 import com.project.domain.senior.Residence;
 import com.project.domain.senior.Senior;
 import com.project.domain.senior.Sex;
-import com.project.persistence.MemberRepository;
 import com.project.persistence.SeniorRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@Component
+//@Component
 @RequiredArgsConstructor
 public class DataInit implements ApplicationRunner {
-    private final PasswordEncoder encoder;
-    private final MemberRepository memberRepository;
     private final SeniorRepository seniorRepository;
     
     private final Random random = new Random();
 
     @Override
     public void run(ApplicationArguments args) throws Exception {
-        if (memberRepository.count() == 0) {
-            log.info(" ========= 멤버 생성 =========");
-            Member admin = Member.builder().username("admin").password(encoder.encode("admin")).role(Role.ROLE_ADMIN).enabled(true).build();
-            Member member = Member.builder().username("member").password(encoder.encode("member")).role(Role.ROLE_MEMBER).enabled(true).build();
-            memberRepository.save(admin);
-            memberRepository.save(member);
-            log.info(" ========= 멤버 생성 완료 =========");
-        }
-
         if (seniorRepository.count() == 0) {
             log.info(" ========= Senior 더미 데이터 생성 (2000명) 시작 =========");
             final int TOTAL_COUNT = 2000;
