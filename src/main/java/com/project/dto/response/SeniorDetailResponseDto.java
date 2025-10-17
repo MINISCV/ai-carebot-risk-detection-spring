@@ -37,7 +37,7 @@ public record SeniorDetailResponseDto(
             senior.getId(),
             senior.getDoll() != null ? senior.getDoll().getId() : null,
             senior.getName(),
-            senior.getPhoto() != null ? "/api/seniors/photos/" + senior.getPhoto() : null,
+            senior.getPhoto() != null ? "seniors/photos/" + senior.getPhoto() : null,
             senior.getBirthDate(),
             senior.getSex(),
             senior.getState(),
