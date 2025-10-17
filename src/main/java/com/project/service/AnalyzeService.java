@@ -51,6 +51,7 @@ public class AnalyzeService {
     private final RestTemplate restTemplate;
     private final DollRepository dollRepository;
     private final OverallResultRepository overallResultRepository;
+    private final NotificationService notificationService;
 
     @Value("${python.server.url}")
     private String pythonServerUrl;
@@ -104,6 +105,7 @@ public class AnalyzeService {
                 requestEntity,
                 AnalysisResponseDto.class);
         AnalysisResponseWithIdDto result = saveAnalysisResult(apiResponse);
+        notificationService.sendAnalysisCompleteNotificationToAdmins(result);
         return result;
     }
     

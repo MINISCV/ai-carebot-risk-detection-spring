@@ -1,14 +1,14 @@
 # **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석 API 명세서**
 
-**버전:** 1.3.1
+**버전:** 1.4.0
 
-**최종 수정일:** 2025-10-13
+**최종 수정일:** 2025-10-17
 
 ---
 
 ## **1. 개요**
 
-이 문서는 **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석**에서 제공하는 REST API의 명세에 대해 기술합니다. 본 API는 **회원, 인형, 시니어 관리, 대화 데이터 분석, 대시보드 및 공통 코드** 기능을 제공하며, 개발자들이 애플리케이션과 서비스를 쉽게 연동할 수 있도록 돕습니다.
+이 문서는 **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석**에서 제공하는 REST API의 명세에 대해 기술합니다. 본 API는 **회원, 인형, 시니어 관리, 대화 데이터 분석, 알림, 대시보드 및 공통 코드** 기능을 제공하며, 개발자들이 애플리케이션과 서비스를 쉽게 연동할 수 있도록 돕습니다.
 
 ---
 
@@ -18,25 +18,26 @@
 
 모든 API 요청의 기본 URL은 다음과 같습니다.
 
-*   `http://127.0.0.1:8080/api`
+*   `http://localhost:8080/api`
 
 ### **2.2. 요청 형식**
 
-*   대부분의 요청 본문은 `JSON` 형식이어야 합니다. 모든 JSON 필드는 snake_case를 따릅니다.
+*   대부분의 요청 본문은 `JSON` 형식이어야 합니다. 모든 JSON 필드는 **snake_case**를 따릅니다.
 *   `Content-Type` 헤더는 `application/json`으로 설정해야 합니다.
 *   파일 업로드의 경우 `Content-Type`은 `multipart/form-data`를 사용합니다.
 
 ### **2.3. 응답 형식**
 
-*   모든 응답의 본문은 `JSON` 형식으로 제공됩니다. 모든 JSON 필드는 snake_case를 따릅니다.
+*   모든 응답의 본문은 `JSON` 형식으로 제공됩니다. 모든 JSON 필드는 **snake_case**를 따릅니다.
 *   성공적인 응답은 일반적으로 HTTP 상태 코드 `200 OK`, `201 Created`, `204 No Content`를 반환합니다.
 *   실패한 응답은 `4xx` 또는 `5xx` 범위의 HTTP 상태 코드를 반환하며, 응답 본문에 에러에 대한 상세 정보를 포함합니다.
+*   날짜 및 시간 형식은 ISO 8601 표준인 `YYYY-MM-DDTHH:mm:ss` 형식을 따릅니다.
 
 ---
 
 ## **3. 인증**
 
-본 API는 로그인을 제외한 일부 공개 API를 제외하고 모든 요청에 대해 인증이 필요합니다. 인증 방식으로는 `JWT Bearer Token`을 사용하며, `ADMIN` 권한이 필요합니다.
+본 API는 로그인을 제외한 일부 공개 API를 제외하고 모든 요청에 대해 인증이 필요합니다. 인증 방식으로는 `JWT Bearer Token`을 사용하며, 대부분의 API는 `ADMIN` 권한이 필요합니다.
 
 ### **3.1. JWT Bearer Token 인증**
 
@@ -46,26 +47,78 @@
 
 토큰이 만료되었을 경우, Refresh Token을 사용하여 새로운 Access Token을 발급받을 수 있습니다.
 
+### **3.2. 토큰 갱신 (Refresh Token)**
+
+*   토큰 만료 시 `POST /refresh` 엔드포인트를 통해 Access Token을 재발급받습니다.
+*   Refresh Token은 `HttpOnly`, `Secure`, `SameSite=None` 속성이 설정된 쿠키로 전달됩니다.
+
 ---
 
 ## **4. 에러 코드**
 
-API 요청 실패 시 반환되는 공통 에러 코드입니다.
+API 요청 실패 시 반환되는 표준 에러 응답 형식입니다.
 
-| HTTP 상태 코드 | 설명 |
-| :--- | :--- |
-| `400 Bad Request` | 요청 파라미터가 누락되었거나 형식이 올바르지 않습니다. |
-| `401 Unauthorized` | 인증되지 않은 요청입니다. 유효한 인증 정보가 필요합니다. |
-| `403 Forbidden` | 해당 리소스에 접근할 권한이 없습니다. |
-| `404 Not Found` | 요청한 리소스를 찾을 수 없습니다. |
-| `405 Method Not Allowed` | 허용되지 않은 HTTP 메서드로 요청했습니다. |
-| `409 Conflict` | 요청이 서버의 현재 상태와 충돌했습니다. (예: 데이터 중복) |
-| `500 Internal Server Error` | 서버 내부에서 오류가 발생했습니다. |
-| `503 Service Unavailable` | 외부 서비스(분석 서버)와의 통신에 실패했습니다. |
+```json
+{
+    "error": "에러 메시지 내용",
+    "field_name": "유효성 검사 실패 시 필드별 에러 메시지 (선택적)"
+}
+```
+
+| HTTP 상태 코드 | 설명 | 주요 발생 원인 |
+| :--- | :--- | :--- |
+| `400 Bad Request` | 잘못된 요청 | 필수 파라미터 누락, 유효성 검사 실패, 잘못된 파일 형식 |
+| `401 Unauthorized` | 인증 실패 | 토큰 누락, 만료된 토큰, 잘못된 자격 증명 |
+| `403 Forbidden` | 권한 없음 | 해당 리소스에 접근할 권한(Role) 부족 |
+| `404 Not Found` | 리소스 없음 | 요청한 URI 또는 리소스 ID를 찾을 수 없음 |
+| `405 Method Not Allowed` | 허용되지 않은 메서드 | 해당 엔드포인트에서 지원하지 않는 HTTP 메서드 사용 |
+| `409 Conflict` | 리소스 충돌 | 데이터 중복(ID 등), 현재 상태에서 수행할 수 없는 작업 |
+| `415 Unsupported Media Type`| 지원하지 않는 미디어 타입 | `Content-Type` 헤더가 올바르지 않음 |
+| `500 Internal Server Error` | 서버 내부 오류 | 예기치 못한 서버 측 오류 |
+| `503 Service Unavailable` | 서비스 이용 불가 | 외부 분석 서버 통신 실패 등 일시적인 장애 |
 
 ---
 
-## **5. API 엔드포인트**
+## **5. 공통 데이터 타입 정의**
+
+API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요청 시에는 아래의 코드값(대문자)을 문자열로 전송해야 합니다.**
+
+### **5.1. 행정구역 (Gu)**
+| 코드값 | 한글명 |
+| :--- | :--- |
+| `DONG_GU` | 동구 |
+| `JUNG_GU` | 중구 |
+| `SEO_GU` | 서구 |
+| `YUSEONG_GU` | 유성구 |
+| `DAEDEOK_GU` | 대덕구 |
+
+*(법정동 코드는 `7.1 GET /administrative-districts` API 참조)*
+
+### **5.2. 성별 (Sex)**
+| 코드값 | 설명 |
+| :--- | :--- |
+| `MALE` | 남성 |
+| `FEMALE` | 여성 |
+
+### **5.3. 거주 형태 (Residence)**
+| 코드값 | 설명 |
+| :--- | :--- |
+| `SINGLE_FAMILY_HOME` | 단독주택 |
+| `MULTIPLEX_HOUSING` | 다세대주택 |
+| `MULTI_FAMILY_HOUSING` | 다가구주택 |
+| `APARTMENT` | 아파트 |
+
+### **5.4. 위험도 상태/레이블 (Risk)**
+| 코드값 | 설명 |
+| :--- | :--- |
+| `POSITIVE` | 안전 |
+| `DANGER` | 주의 |
+| `CRITICAL` | 위험 |
+| `EMERGENCY` | 긴급 |
+
+---
+
+## **6. API 엔드포인트 상세**
 
 ### **1. 인증 (Authentication)**
 
@@ -73,8 +126,6 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 사용자 아이디와 비밀번호로 로그인하여 시스템 접근을 위한 JWT 토큰을 발급받습니다.
 
-*   **Method:** `POST`
-*   **URL:** `/login`
 *   **Description:** 로그인 성공 시, 응답 헤더에 Access Token을, 응답 쿠키에 Refresh Token을 포함하여 반환합니다.
 *   **인증:** 불필요
 
@@ -108,9 +159,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 유효한 Refresh Token을 사용하여 만료된 Access Token을 갱신합니다.
 
-*   **Method:** `POST`
-*   **URL:** `/refresh`
-*   **Description:** 요청 시 쿠키에 담긴 Refresh Token을 검증하여 새로운 Access Token을 발급하고 응답 헤더에 담아 반환합니다.
+*   **Description:** 요청 시 쿠키에 담긴 Refresh Token을 검증하여 새로운 Access Token과 Refresh Token을 발급하고 각각 응답 헤더와 쿠키에 담아 반환합니다.
 *   **인증:** 불필요 (Refresh Token 쿠키 필요)
 
 *   **Request Cookies:**
@@ -121,6 +170,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 *   **Success Response (`200 OK`):**
     *   **Header:** `Authorization` 헤더에 새로운 Access Token이 포함됩니다. (`Bearer {new_access_token}`)
+    *   **Cookie:** `refresh_token` 쿠키에 새로운 Refresh Token이 포함됩니다. (HttpOnly)
     *   응답 본문은 없습니다.
 
 *   **Error Responses:**
@@ -134,8 +184,6 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 시스템에 새로운 관리자 회원을 등록합니다.
 
-*   **Method:** `POST`
-*   **URL:** `/members`
 *   **Description:** 새로운 회원을 생성합니다. 사용자 이름(username)은 시스템에서 유일해야 합니다.
 *   **인증:** 불필요
 
@@ -173,10 +221,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 시스템에 등록된 모든 회원의 목록을 조회합니다.
 
-*   **Method:** `GET`
-*   **URL:** `/members`
 *   **Description:** 전체 회원 목록을 조회합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Success Response (`200 OK`):**
     *   회원 정보 객체 배열을 반환합니다.
@@ -199,10 +245,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 특정 회원의 상세 정보를 조회합니다.
 
-*   **Method:** `GET`
-*   **URL:** `/members/{username}`
 *   **Description:** Username으로 특정 회원의 정보를 조회합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Path Parameters:**
 
@@ -227,10 +271,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 특정 회원의 역할(role) 및 활성화(enabled) 상태를 수정합니다.
 
-*   **Method:** `PUT`
-*   **URL:** `/members/{username}`
 *   **Description:** Username으로 특정 회원의 정보를 수정합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Path Parameters:**
 
@@ -270,10 +312,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 특정 회원을 시스템에서 삭제합니다.
 
-*   **Method:** `DELETE`
-*   **URL:** `/members/{username}`
 *   **Description:** Username으로 특정 회원을 삭제합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Path Parameters:**
 
@@ -291,14 +331,12 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 ### **3. 인형 (Dolls)**
 
-#### **3.1. `POST /dolls` - 인형 생성**
+#### **3.1. `POST /dolls` - 인형 등록**
 
 새로운 인형을 시스템에 등록합니다.
 
-*   **Method:** `POST`
-*   **URL:** `/dolls`
 *   **Description:** 새로운 인형을 생성합니다. 인형 ID는 시스템에서 유일해야 합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Request Body:**
 
@@ -332,10 +370,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 시스템에 등록된 모든 인형의 목록을 조회합니다.
 
-*   **Method:** `GET`
-*   **URL:** `/dolls`
 *   **Description:** 전체 인형 목록과 각 인형에 할당된 시니어 ID를 함께 조회합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Success Response (`200 OK`):**
     *   인형 객체 배열을 반환합니다.
@@ -356,10 +392,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 특정 ID를 가진 인형의 상세 정보를 조회합니다.
 
-*   **Method:** `GET`
-*   **URL:** `/dolls/{id}`
 *   **Description:** ID로 특정 인형의 정보를 조회합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Path Parameters:**
 
@@ -384,10 +418,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 특정 ID를 가진 인형을 시스템에서 삭제합니다.
 
-*   **Method:** `DELETE`
-*   **URL:** `/dolls/{id}`
 *   **Description:** ID로 특정 인형을 삭제합니다. 해당 인형이 시니어에게 할당되어 있는 경우 삭제할 수 없습니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Path Parameters:**
 
@@ -410,12 +442,10 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 새로운 시니어 정보를 등록하고, 등록되지 않은 인형을 할당합니다.
 
-*   **Method:** `POST`
-*   **URL:** `/seniors`
 *   **Description:** 새로운 시니어 정보를 생성하고, 사용 가능한 인형을 할당합니다. 요청은 `senior` (JSON) 파트와 `photo` (file) 파트로 구성됩니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
-*   **Request Body (Form Data):**
+*   **Request Body (multipart/form-data):**
 
 | 파트 이름 | 타입 | 필수 | 설명 |
 | :--- | :--- | :--- | :--- |
@@ -434,8 +464,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | `phone` | `string` | Y | 연락처 (010-1234-5678 형식) |
 | `address` | `string` | Y | 주소 전체 |
 | `address_detail` | `string` | N | 상세 주소 (예: 101동 1204호) |
-| `gu` | `string` | Y | 주소(구). `GET /api/administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. |
-| `dong` | `string` | Y | 주소(법정동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
+| `gu` | `string` | Y | 주소(구). `GET /administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. (예: `DONG_GU`) |
+| `dong` | `string` | Y | 주소(법정동). `GET /administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. (예: `WON_DONG`) |
 | `note` | `string` | N | 시니어 관련 특이사항 |
 | `guardian_name`|`string` | Y | 보호자 이름 |
 | `guardian_phone`|`string` | Y | 보호자 연락처 (010-1234-5678 형식) |
@@ -452,7 +482,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
     "id": 1,
     "doll_id": "doll-123",
     "name": "김어르신",
-    "photo_url": "/api/seniors/photos/uuid-generated-filename.jpg",
+    "photo_url": "seniors/photos/uuid-generated-filename.jpg",
     "birth_date": "1945-05-10",
     "sex": "FEMALE",
     "state": "POSITIVE",
@@ -479,23 +509,22 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 ---
 #### **4.2. `GET /seniors` - 전체 시니어 목록 조회 (검색 및 페이징)**
-*   **Method:** `GET`
-*   **URL:** `/seniors`
+
 *   **Description:** 시스템에 등록된 시니어 목록을 검색 조건에 따라 페이징하여 조회합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Query Parameters:**
 
 | 파라미터 | 타입 | 필수 | 설명 |
 | :--- | :--- | :--- | :--- |
-| `page` | `integer` | N | 페이지 번호 (0부터 시작) |
-| `size` | `integer` | N | 페이지당 항목 수 |
+| `page` | `integer` | N | 페이지 번호 (0부터 시작, 기본값: 0) |
+| `size` | `integer` | N | 페이지당 항목 수 (기본값: 20) |
 | `senior_id` | `long` | N | 시니어 ID |
 | `name` | `string` | N | 시니어 이름 (부분 일치) |
 | `phone` | `string` | N | 연락처 (부분 일치) |
 | `sex` | `string` | N | 성별. 허용 값: `"MALE"`, `"FEMALE"` |
-| `gu` | `string` | N | 주소(구). `GET /api/administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. |
-| `dong` | `string` | N | 주소(법정동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
+| `gu` | `string` | N | 주소(구). `GET /administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. (예: `DONG_GU`) |
+| `dong` | `string` | N | 주소(법정동). `GET /administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. (예: `WON_DONG`) |
 | `state` | `string` | N | 현재 상태. 허용 값: `"POSITIVE"`, `"DANGER"`, `"CRITICAL"`, `"EMERGENCY"` |
 | `doll_id` | `string` | N | 할당된 인형 ID |
 | `age_group`| `integer` | N | 연령대 (예: 60, 70, 80, 100(100세 이상)) |
@@ -528,10 +557,9 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 ```
 ---
 #### **4.3. `GET /seniors/{id}` - 특정 시니어 상세 정보 조회**
-*   **Method:** `GET`
-*   **URL:** `/seniors/{id}`
+
 *   **Description:** ID로 특정 시니어의 상세 정보와 최근 분석 결과 5개를 조회합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 *   **Path Parameters:**
 
 | 파라미터 | 타입 | 필수 | 설명 |
@@ -545,7 +573,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
     "id": 1,
     "doll_id": "doll-123",
     "name": "김어르신",
-    "photo_url": "/api/seniors/photos/uuid-generated-filename.jpg",
+    "photo_url": "seniors/photos/uuid-generated-filename.jpg",
     "birth_date": "1945-05-10",
     "sex": "FEMALE",
     "state": "POSITIVE",
@@ -578,11 +606,10 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 ---
 #### **4.4. `PUT /seniors/{id}` - 시니어 정보 수정**
-*   **Method:** `PUT`
-*   **URL:** `/seniors/{id}`
+
 *   **Content-Type:** `multipart/form-data`
 *   **Description:** ID로 특정 시니어의 정보를 수정합니다. 요청 형식은 `POST /seniors`와 동일합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 *   **Path Parameters:**
 
 | 파라미터 | 타입 | 필수 | 설명 |
@@ -598,10 +625,9 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 ---
 #### **4.5. `DELETE /seniors/{id}` - 시니어 삭제**
-*   **Method:** `DELETE`
-*   **URL:** `/seniors/{id}`
+
 *   **Description:** ID로 특정 시니어를 삭제합니다. 삭제 시 할당되었던 인형은 '할당되지 않은' 상태가 됩니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 *   **Path Parameters:**
 
 | 파라미터 | 타입 | 필수 | 설명 |
@@ -620,10 +646,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 인형과의 대화 내용이 담긴 CSV 파일을 업로드하여 감정 및 위험도 분석을 요청합니다.
 
-*   **Method:** `POST`
-*   **URL:** `/analyze`
-*   **Description:** 대화 내용이 담긴 CSV 파일을 분석하고 그 결과를 데이터베이스에 저장합니다.
-*   **인증:** 필수
+*   **Description:** 대화 내용이 담긴 CSV 파일을 분석하고 그 결과를 데이터베이스에 저장합니다. 분석 완료 시 관리자들에게 실시간 알림이 전송됩니다.
+*   **인증:** `ADMIN` 권한 필요
 *   **Content-Type:** `multipart/form-data`
 
 *   **Request Body (Form Data):**
@@ -633,7 +657,7 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | `file` | `file` | Y | 분석할 대화 내용이 담긴 CSV 파일 |
 
 *   **CSV 파일 형식:**
-    *   첫 번째 줄은 헤더(`doll_id,text,uttered_at`)이며, 분석 시에는 이 헤더를 기준으로 데이터를 읽습니다.
+    *   첫 번째 줄은 헤더(`doll_id,text,uttered_at`)이며, 분석 시에는 이 헤더를 무시하고 두 번째 줄부터 데이터를 읽습니다.
     *   각 줄은 `인형ID,대화내용,발화시각` 순서여야 합니다.
     *   `uttered_at`의 날짜/시간 형식은 `yyyy-MM-dd H:mm:ss` 입니다.
     *   **예시:**
@@ -731,10 +755,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 지금까지 분석된 모든 대화의 종합 결과 목록을 검색 조건에 따라 조회합니다.
 
-*   **Method:** `GET`
-*   **URL:** `/analyze`
 *   **Description:** 전체 분석 종합 결과 목록을 검색 조건에 따라 페이징하여 조회합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Query Parameters:**
 
@@ -745,8 +767,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 | `senior_id`| `long` | N | 시니어 ID |
 | `name` | `string` | N | 시니어 이름 (부분 일치) |
 | `sex` | `string` | N | 성별. 허용 값: `"MALE"`, `"FEMALE"` |
-| `gu` | `string` | N | 주소(구). `GET /api/administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. |
-| `dong` | `string` | N | 주소(법정동). `GET /api/administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. |
+| `gu` | `string` | N | 주소(구). `GET /administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. (예: `DONG_GU`) |
+| `dong` | `string` | N | 주소(법정동). `GET /administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. (예: `WON_DONG`) |
 | `age_group`| `integer` | N | 연령대 (예: 60, 70, 80, 100(100세 이상)) |
 | `doll_id` | `string` | N | 인형 ID |
 | `label` | `string` | N | 분석 결과 레이블. 허용 값: `"POSITIVE"`, `"DANGER"`, `"CRITICAL"`, `"EMERGENCY"` |
@@ -785,10 +807,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 특정 ID를 가진 분석의 상세 결과를 조회합니다. (종합 결과 + 개별 대화 목록)
 
-*   **Method:** `GET`
-*   **URL:** `/analyze/{id}`
 *   **Description:** ID로 특정 분석의 상세 결과를 조회합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Path Parameters:**
 
@@ -853,10 +873,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 특정 ID를 가진 분석 결과를 삭제합니다.
 
-*   **Method:** `DELETE`
-*   **URL:** `/analyze/{id}`
 *   **Description:** ID로 특정 분석 결과를 삭제합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Path Parameters:**
 
@@ -877,10 +895,8 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 
 대시보드에 필요한 데이터를 조회합니다. (시니어 현황, 긴급 분석 결과)
 
-*   **Method:** `GET`
-*   **URL:** `/dashboard`
 *   **Description:** 시니어 상태별 인원수와 최근 긴급/위험 분석 결과 상위 10개를 조회합니다.
-*   **인증:** 필수
+*   **인증:** `ADMIN` 권한 필요
 
 *   **Success Response (`200 OK`):**
     *   대시보드 데이터를 반환합니다.
@@ -923,14 +939,86 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 ```
 
 ---
-### **7. 공통 (Common)**
 
-#### **7.1. `GET /administrative-districts` - 전체 법정구역 목록 조회**
+### **7. 알림 (Notifications)**
+
+#### **7.1. `GET /notifications/subscribe` - 실시간 알림 구독**
+
+*   **Description:** 현재 로그인한 사용자가 서버로부터 실시간 알림을 받기 위해 SSE(Server-Sent Events) 연결을 구독합니다.
+*   **인증:** `ADMIN` 권한 필요
+*   **Response Content-Type:** `text/event-stream`
+
+*   **Event Stream:**
+    *   **`connect` event:** 연결 성공 시, "SSE 연결완료: {username}" 메시지가 전송됩니다.
+    *   **`notification` event:** 새로운 알림이 발생할 때마다 해당 이벤트가 전송됩니다. 데이터는 아래와 같은 JSON 형식입니다.
+```json
+{
+    "notification_id": 1,
+    "type": "ANALYSIS_COMPLETE",
+    "resource_id": "10053",
+    "message": "인형 'doll-123'의 분석이 완료되었습니다. (결과: DANGER)",
+    "is_read": false,
+    "created_at": "2025-10-17T17:32:10.189748"
+}
+```
+
+---
+
+#### **7.2. `GET /notifications` - 사용자 알림 목록 조회**
+
+*   **Description:** 현재 로그인한 사용자의 모든 알림 목록을 최신순으로 조회합니다.
+*   **인증:** `ADMIN` 권한 필요
+
+*   **Success Response (`200 OK`):**
+    *   알림 객체 배열을 반환합니다.
+```json
+[
+    {
+        "notification_id": 2,
+        "type": "ANALYSIS_COMPLETE",
+        "resource_id": "10054",
+        "message": "인형 'doll-456'의 분석이 완료되었습니다. (결과: POSITIVE)",
+        "is_read": false,
+        "created_at": "2025-10-17T17:33:33.606397"
+    },
+    {
+        "notification_id": 1,
+        "type": "ANALYSIS_COMPLETE",
+        "resource_id": "10053",
+        "message": "인형 'doll-123'의 분석이 완료되었습니다. (결과: DANGER)",
+        "is_read": true,
+        "created_at": "2025-10-17T17:32:10.189748"
+    }
+]
+```
+
+---
+
+#### **7.3. `POST /notifications/{id}/read` - 알림 읽음 처리**
+
+*   **Description:** 특정 알림을 '읽음' 상태로 변경합니다.
+*   **인증:** `ADMIN` 권한 필요
+
+*   **Path Parameters:**
+
+| 파라미터 | 타입 | 필수 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `long`| Y | 읽음 처리할 알림의 ID |
+
+*   **Success Response (`200 OK`):**
+    *   응답 본문이 없습니다.
+
+*   **Error Responses:**
+    *   `404 Not Found`: 해당 ID의 알림이 존재하지 않을 경우 발생합니다.
+
+---
+
+### **8. 공통 (Common)**
+
+#### **8.1. `GET /administrative-districts` - 전체 법정구역 목록 조회**
 
 시니어 등록 및 검색에 사용 가능한 전체 '구'와 '법정동' 목록을 조회합니다.
 
-*   **Method:** `GET`
-*   **URL:** `/administrative-districts`
 *   **Description:** 프론트엔드에서 지역 선택 드롭다운 메뉴를 동적으로 생성하는 데 사용될 수 있습니다.
 *   **인증:** 불필요
 
@@ -1053,38 +1141,40 @@ API 요청 실패 시 반환되는 공통 에러 코드입니다.
 ]
 ```
 ---
-### **8. API 엔드포인트 요약**
+### **9. API 엔드포인트 요약**
 
 | 기능 | 메서드 | 엔드포인트 | 인증 | 주요 요청 | 주요 응답 |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **인증** | | | | | |
-| 로그인 | `POST` | `/api/login` | 불필요 | Body: `username`, `password` | Header: `Authorization`, Cookie: `refresh_token` |
-| 토큰 갱신 | `POST` | `/api/refresh` | 불필요 | Cookie: `refresh_token` | Header: `Authorization` |
+| 로그인 | `POST` | `/login` | 불필요 | Body: `username`, `password` | Header: `Authorization`, Cookie: `refresh_token` |
+| 토큰 갱신 | `POST` | `/refresh` | 불필요 | Cookie: `refresh_token` | Header: `Authorization`, Cookie: `refresh_token` |
 | **회원** | | | | | |
-| 회원 가입 | `POST` | `/api/members` | 불필요 | Body: `username`, `password` | 생성된 `Member` 객체 |
-| 전체 회원 조회 | `GET` | `/api/members` | ADMIN | - | `Member` 객체 배열 |
-| 특정 회원 조회 | `GET` | `/api/members/{username}` | ADMIN | Path: `username` | `Member` 객체 |
-| 회원 정보 수정 | `PUT` | `/api/members/{username}` | ADMIN | Path: `username`, Body: `role`, `enabled` | 수정된 `Member` 객체 |
-| 회원 삭제 | `DELETE` | `/api/members/{username}` | ADMIN | Path: `username` | `204 No Content` |
+| 회원 가입 | `POST` | `/members` | 불필요 | Body: `username`, `password` | `201 Created`, 생성된 `Member` 객체 |
+| 전체 회원 조회 | `GET` | `/members` | ADMIN | - | `Member` 객체 배열 |
+| 특정 회원 조회 | `GET` | `/members/{username}` | ADMIN | Path: `username` | `Member` 객체 |
+| 회원 정보 수정 | `PUT` | `/members/{username}` | ADMIN | Path: `username`, Body: `role`, `enabled` | 수정된 `Member` 객체 |
+| 회원 삭제 | `DELETE` | `/members/{username}` | ADMIN | Path: `username` | `204 No Content` |
 | **인형** | | | | | |
-| 인형 생성 | `POST` | `/api/dolls` | ADMIN | Body: `id` | 생성된 `Doll` 객체 |
-| 전체 인형 조회 | `GET` | `/api/dolls` | ADMIN | - | `Doll` 객체 배열 |
-| 특정 인형 조회 | `GET` | `/api/dolls/{id}` | ADMIN | Path: `id` | `Doll` 객체 |
-| 인형 삭제 | `DELETE` | `/api/dolls/{id}` | ADMIN | Path: `id` | `204 No Content` |
+| 인형 등록 | `POST` | `/dolls` | ADMIN | Body: `id` | `201 Created`, 생성된 `Doll` 객체 |
+| 전체 인형 조회 | `GET` | `/dolls` | ADMIN | - | `Doll` 객체 배열 |
+| 특정 인형 조회 | `GET` | `/dolls/{id}` | ADMIN | Path: `id` | `Doll` 객체 |
+| 인형 삭제 | `DELETE` | `/dolls/{id}` | ADMIN | Path: `id` | `204 No Content` |
 | **시니어** | | | | | |
-| 시니어 등록 | `POST` | `/api/seniors` | ADMIN | Form-data: `senior`, `photo` | 생성된 `Senior` 객체 |
-| 시니어 목록 조회 | `GET` | `/api/seniors` | ADMIN | Query: 검색 조건 | 페이징된 `Senior` 목록 |
-| 특정 시니어 조회 | `GET` | `/api/seniors/{id}` | ADMIN | Path: `id` | `Senior` 상세 객체 |
-| 시니어 정보 수정 | `PUT` | `/api/seniors/{id}` | ADMIN | Path: `id`, Form-data: `senior`, `photo` | 수정된 `Senior` 객체 |
-| 시니어 삭제 | `DELETE` | `/api/seniors/{id}` | ADMIN | Path: `id` | `204 No Content` |
+| 시니어 등록 | `POST` | `/seniors` | ADMIN | Form-data: `senior`(json), `photo`(file) | `201 Created`, 생성된 `Senior` 객체 |
+| 시니어 목록 조회 | `GET` | `/seniors` | ADMIN | Query: 검색 조건, 페이징 | 페이징된 `Senior` 목록 |
+| 특정 시니어 조회 | `GET` | `/seniors/{id}` | ADMIN | Path: `id` | `Senior` 상세 객체 |
+| 시니어 정보 수정 | `PUT` | `/seniors/{id}` | ADMIN | Path: `id`, Form-data: `senior`(json), `photo`(file) | 수정된 `Senior` 객체 |
+| 시니어 삭제 | `DELETE` | `/seniors/{id}` | ADMIN | Path: `id` | `204 No Content` |
 | **분석** | | | | | |
-| 대화 파일 분석 | `POST` | `/api/analyze` | ADMIN | Form-data: `file` | `AnalysisResult` 객체 |
-| 분석 결과 목록 조회 | `GET` | `/api/analyze` | ADMIN | Query: 검색 조건 | 페이징된 `OverallResult` 목록 |
-| 특정 분석 결과 조회 | `GET` | `/api/analyze/{id}` | ADMIN | Path: `id` | `AnalysisDetail` 객체 |
-| 분석 결과 삭제 | `DELETE` | `/api/analyze/{id}` | ADMIN | Path: `id` | `204 No Content` |
+| 대화 파일 분석 | `POST` | `/analyze` | ADMIN | Form-data: `file` | `201 Created`, `AnalysisResult` 객체 |
+| 분석 결과 목록 조회 | `GET` | `/analyze` | ADMIN | Query: 검색 조건, 페이징 | 페이징된 `OverallResult` 목록 |
+| 특정 분석 결과 조회 | `GET` | `/analyze/{id}` | ADMIN | Path: `id` | `AnalysisDetail` 객체 |
+| 분석 결과 삭제 | `DELETE` | `/analyze/{id}` | ADMIN | Path: `id` | `204 No Content` |
 | **대시보드** | | | | | |
-| 대시보드 데이터 조회 | `GET` | `/api/dashboard` | ADMIN | - | `Dashboard` 데이터 객체 |
+| 대시보드 데이터 조회 | `GET` | `/dashboard` | ADMIN | - | `Dashboard` 데이터 객체 |
+| **알림** | | | | | |
+| 실시간 알림 구독 | `GET` | `/notifications/subscribe`| ADMIN | - | `text/event-stream` 형식의 실시간 이벤트 |
+| 알림 목록 조회 | `GET` | `/notifications`| ADMIN | - | `Notification` 객체 배열 |
+| 알림 읽음 처리 | `POST` | `/notifications/{id}/read`| ADMIN | Path: `id` | `200 OK` |
 | **공통** | | | | | |
-| 법정구역 목록 조회 | `GET` | `/api/administrative-districts`| 불필요 | - | '구' 및 '법정동' 목록 |
-
----
+| 법정구역 목록 조회 | `GET` | `/administrative-districts`| 불필요 | - | '구' 및 '법정동' 목록 |
