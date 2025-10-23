@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -89,16 +88,15 @@ public class SeniorService {
 	@Transactional(readOnly = true)
     public SeniorDetailResponseDto getSeniorDetails(Long id) {
 		log.info("특정 시니어 상세 정보 조회: seniorId={}", id);
-        Senior senior = seniorRepository.findDetailsById(id)
-                .orElseThrow(() -> new EntityNotFoundException("시니어 " + id + "는 없음."));
+		
+		Senior senior = seniorRepository.findByIdWithDoll(id)
+	            .orElseThrow(() -> new EntityNotFoundException("시니어 " + id + "는 없음."));
 
-        List<RecentOverallResultDto> recentResults = senior.getOverallResults().stream()
-                .sorted(Comparator.comparing(OverallResult::getTimestamp).reversed())
-                .limit(5)
-                .map(RecentOverallResultDto::from)
-                .collect(Collectors.toList());
+	    List<RecentOverallResultDto> recentResults = overallResultRepository.findTop5BySeniorIdOrderByTimestampDesc(id).stream()
+	            .map(RecentOverallResultDto::from)
+	            .collect(Collectors.toList());
 
-        return new SeniorDetailResponseDto(senior, recentResults);
+	    return new SeniorDetailResponseDto(senior, recentResults);
     }
 	
 	@Transactional(readOnly = true)
