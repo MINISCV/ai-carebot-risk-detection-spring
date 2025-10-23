@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +22,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.project.dto.request.SeniorRequestDto;
 import com.project.dto.request.SeniorSearchCondition;
+import com.project.dto.request.UpdateSeniorStateRequestDto;
 import com.project.dto.response.CustomPageDto;
 import com.project.dto.response.SeniorDetailResponseDto;
 import com.project.dto.response.SeniorListResponseDto;
@@ -70,6 +72,14 @@ public class SeniorController {
             @RequestPart(value = "photo", required = false) MultipartFile photo) {
     	SeniorResponseDto senior = seniorService.updateSenior(id, seniorDto, photo);
         return ResponseEntity.ok(senior);
+    }
+    
+    @PostMapping("/{id}/state")
+    public ResponseEntity<Void> updateSeniorState(
+            @PathVariable Long id,
+            @Valid @RequestBody UpdateSeniorStateRequestDto requestDto) {
+        seniorService.updateSeniorState(id, requestDto);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")

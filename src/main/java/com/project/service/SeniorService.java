@@ -10,6 +10,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.project.domain.analysis.OverallResult;
+import com.project.domain.analysis.Risk;
 import com.project.domain.senior.Address;
 import com.project.domain.senior.Doll;
 import com.project.domain.senior.Guardian;
@@ -24,10 +26,12 @@ import com.project.domain.senior.MedicalInfo;
 import com.project.domain.senior.Senior;
 import com.project.dto.request.SeniorRequestDto;
 import com.project.dto.request.SeniorSearchCondition;
+import com.project.dto.request.UpdateSeniorStateRequestDto;
 import com.project.dto.response.RecentOverallResultDto;
 import com.project.dto.response.SeniorDetailResponseDto;
 import com.project.dto.response.SeniorListResponseDto;
 import com.project.dto.response.SeniorResponseDto;
+import com.project.event.SeniorStateChangedEvent;
 import com.project.persistence.DollRepository;
 import com.project.persistence.SeniorRepository;
 
@@ -41,7 +45,8 @@ import lombok.extern.slf4j.Slf4j;
 public class SeniorService {
 	private final SeniorRepository seniorRepository;
 	private final DollRepository dollRepository;
-	
+	private final ApplicationEventPublisher eventPublisher;
+
 	@Value("${senior.photo.upload-path}")
     private String uploadPath;
 	
@@ -58,8 +63,15 @@ public class SeniorService {
 		
 		Senior senior = dtoToSenior(requestDto, photoFilename);
 		senior.changeDoll(doll);
-		seniorRepository.save(senior);
-        log.info("신규 시니어 등록 완료: seniorId={}, dollId={}", senior.getId(), doll.getId());
+		Senior savedSenior = seniorRepository.save(senior);
+		SeniorStateChangedEvent event = new SeniorStateChangedEvent(
+	            savedSenior,
+	            null,
+	            savedSenior.getState(),
+	            "신규 등록"
+	        );
+	        eventPublisher.publishEvent(event);
+	        log.info("신규 시니어 등록 완료: seniorId={}, dollId={}", savedSenior.getId(), doll.getId());
 		return new SeniorResponseDto(senior);
 	}
 
@@ -110,6 +122,30 @@ public class SeniorService {
 		updateSenior(existingSenior, seniorDto, newPhotoFilename);
 		log.info("시니어 정보 수정 완료: seniorId={}", id);
 		return new SeniorResponseDto(existingSenior);
+	}
+	
+	@Transactional
+	public void updateSeniorState(Long seniorId, UpdateSeniorStateRequestDto requestDto) {
+		log.info("관리자에 의한 시니어 상태 변경 요청: seniorId={}, newState={}, reason={}", seniorId, requestDto.newState(), requestDto.reason());
+	    Senior senior = seniorRepository.findById(seniorId)
+	            .orElseThrow(() -> new EntityNotFoundException("시니어 " + seniorId + "는 없음."));
+
+	    Risk previousState = senior.getState();
+	    Risk newState = requestDto.newState();
+
+	    if (previousState != newState) {
+	        senior.updateState(newState);
+	        
+	        SeniorStateChangedEvent event = new SeniorStateChangedEvent(
+	            senior,
+	            previousState,
+	            newState,
+	            requestDto.reason()
+	        );
+	        eventPublisher.publishEvent(event);
+	        log.info("관리자에 의해 시니어 #{}의 상태가 {} -> {}로 변경되었습니다. 사유: {}", 
+	                seniorId, previousState, newState, requestDto.reason());
+	    }
 	}
 
 	@Transactional

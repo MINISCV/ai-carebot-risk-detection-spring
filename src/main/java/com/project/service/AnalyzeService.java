@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpEntity;
@@ -27,7 +28,9 @@ import com.project.domain.analysis.ConfidenceScores;
 import com.project.domain.analysis.Dialogue;
 import com.project.domain.analysis.OverallResult;
 import com.project.domain.analysis.Reason;
+import com.project.domain.analysis.Risk;
 import com.project.domain.senior.Doll;
+import com.project.domain.senior.Senior;
 import com.project.dto.ConfidenceScoresDto;
 import com.project.dto.request.DialogueAnalysisRequestDto;
 import com.project.dto.request.OverallResultSearchCondition;
@@ -36,6 +39,7 @@ import com.project.dto.response.AnalysisResponseDto;
 import com.project.dto.response.AnalysisResponseWithIdDto;
 import com.project.dto.response.DialogueAnalysisResponseDto;
 import com.project.dto.response.OverallResultListResponseDto;
+import com.project.event.SeniorStateChangedEvent;
 import com.project.exception.InvalidFileException;
 import com.project.persistence.DollRepository;
 import com.project.persistence.OverallResultRepository;
@@ -52,6 +56,7 @@ public class AnalyzeService {
     private final DollRepository dollRepository;
     private final OverallResultRepository overallResultRepository;
     private final NotificationService notificationService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Value("${python.server.url}")
     private String pythonServerUrl;
@@ -157,11 +162,30 @@ public class AnalyzeService {
             
             overallResult.addDialogue(dialogue);
         }
+        
+        Senior senior = overallResult.getSenior();
+        Risk previousState = senior.getState();
+        Risk newState = overallResult.getLabel();
+        
+        senior.updateState(newState);
 
-        AnalysisResponseWithIdDto result = new AnalysisResponseWithIdDto(overallResultRepository.save(overallResult).getId(), responseDto.overallResult(), responseDto.dialogueResult());
-        overallResult.getSenior().updateState(overallResult.getLabel());
-        log.info("분석 결과 저장 완료: overallResultId={}, dollId={}", result.id(), responseDollId);
-        return result;
+        OverallResult savedResult = overallResultRepository.save(overallResult);
+
+        if (previousState != newState) {
+        	String changeReason = String.format("분석 ID: %d의 결과로 상태 변경", savedResult.getId());
+            SeniorStateChangedEvent event = new SeniorStateChangedEvent(
+                senior, 
+                previousState, 
+                newState, 
+                changeReason
+            );
+            log.info("SeniorStateChangedEvent 발행: seniorId={}, reason={}", senior.getId(), changeReason);
+            eventPublisher.publishEvent(event);
+        }
+        
+        log.info("분석 결과 저장 완료: overallResultId={}, dollId={}", savedResult.getId(), responseDollId);
+
+        return new AnalysisResponseWithIdDto(savedResult.getId(), responseDto.overallResult(), responseDto.dialogueResult());
     }
 
     @Transactional(readOnly = true)

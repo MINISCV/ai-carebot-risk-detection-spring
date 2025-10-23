@@ -55,6 +55,8 @@ public class OverallResult {
     private Reason reason;
     
     private String treatmentPlan;
+    
+    private boolean isResolved;
         
     @OneToMany(mappedBy = "overallResult", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Dialogue> dialogues = new ArrayList<>();
