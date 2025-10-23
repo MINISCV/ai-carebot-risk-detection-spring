@@ -1,8 +1,8 @@
 # **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석 API 명세서**
 
-**버전:** 1.4.0
+**버전:** 1.5.0
 
-**최종 수정일:** 2025-10-17
+**최종 수정일:** 2025-10-23
 
 ---
 
@@ -37,7 +37,14 @@
 
 ## **3. 인증**
 
-본 API는 로그인을 제외한 일부 공개 API를 제외하고 모든 요청에 대해 인증이 필요합니다. 인증 방식으로는 `JWT Bearer Token`을 사용하며, 대부분의 API는 `ADMIN` 권한이 필요합니다.
+본 API는 아래 명시된 일부 공개 API를 제외하고 모든 요청에 대해 인증이 필요합니다. 인증 방식으로는 `JWT Bearer Token`을 사용하며, 대부분의 API는 `ADMIN` 권한이 필요합니다.
+
+*   **인증이 필요 없는 공개 API:**
+    *   `POST /login` (로그인)
+    *   `POST /refresh` (토큰 갱신)
+    *   `POST /members` (회원 가입)
+    *   `GET /administrative-districts` (행정구역 조회)
+    *   `GET /seniors/photos/**` (시니어 사진 조회)
 
 ### **3.1. JWT Bearer Token 인증**
 
@@ -92,7 +99,7 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 | `YUSEONG_GU` | 유성구 |
 | `DAEDEOK_GU` | 대덕구 |
 
-*(법정동 코드는 `7.1 GET /administrative-districts` API 참조)*
+*(법정동 코드는 `8.1 GET /administrative-districts` API 참조)*
 
 ### **5.2. 성별 (Sex)**
 | 코드값 | 설명 |
@@ -639,6 +646,65 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 
 *   **Error Responses:** `404 Not Found`: 해당 ID의 시니어가 존재하지 않을 경우 발생합니다.
 
+---
+#### **4.6. `POST /seniors/{id}/state` - 시니어 상태 변경**
+
+*   **Description:** 관리자가 특정 시니어의 상태(위험도)를 수동으로 변경합니다. 분석 결과와 연동하여 조치 완료 처리도 가능합니다.
+*   **인증:** `ADMIN` 권한 필요
+*   **Path Parameters:**
+
+| 파라미터 | 타입 | 필수 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `long`| Y | 상태를 변경할 시니어의 ID |
+
+*   **Request Body:**
+
+| 필드 | 타입 | 필수 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `overall_result_id` | `long` | N | 이 상태 변경과 관련된 분석 결과 ID. 조치 완료 처리에 사용됩니다. |
+| `new_state` | `string` | Y | 변경할 새로운 상태. 허용 값: `"POSITIVE"`, `"DANGER"`, `"CRITICAL"`, `"EMERGENCY"` |
+| `reason` | `string` | Y | 상태 변경 사유 (예: "관리자 직접 확인 후 상태 변경") |
+
+*   **Success Response (`200 OK`):**
+    *   응답 본문이 없습니다.
+
+*   **Error Responses:**
+    *   `404 Not Found`: 해당 ID의 시니어 또는 `overall_result_id`가 존재하지 않을 경우 발생합니다.
+
+---
+#### **4.7. `GET /seniors/{id}/state-history` - 시니어 상태 변경 이력 조회**
+
+*   **Description:** 특정 시니어의 상태(위험도)가 어떻게 변경되었는지 이력을 조회합니다.
+*   **인증:** `ADMIN` 권한 필요
+*   **Path Parameters:**
+
+| 파라미터 | 타입 | 필수 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `id` | `long`| Y | 이력을 조회할 시니어의 ID |
+
+*   **Success Response (`200 OK`):**
+    *   상태 변경 이력 객체의 배열을 최신순으로 반환합니다.
+```json
+[
+    {
+        "id": 2,
+        "previous_state": "DANGER",
+        "new_state": "POSITIVE",
+        "reason": "관리자 직접 통화 후 상태 정상 확인",
+        "changed_at": "2025-10-23T14:20:00"
+    },
+    {
+        "id": 1,
+        "previous_state": "POSITIVE",
+        "new_state": "DANGER",
+        "reason": "분석 ID: 101의 결과로 상태 변경",
+        "changed_at": "2025-10-22T11:05:10"
+    }
+]
+```
+
+*   **Error Responses:** `404 Not Found`: 해당 ID의 시니어가 존재하지 않을 경우 발생합니다.
+
 ***
 ### **5. 분석 (Analyze)**
 
@@ -951,14 +1017,27 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 *   **Event Stream:**
     *   **`connect` event:** 연결 성공 시, "SSE 연결완료: {username}" 메시지가 전송됩니다.
     *   **`notification` event:** 새로운 알림이 발생할 때마다 해당 이벤트가 전송됩니다. 데이터는 아래와 같은 JSON 형식입니다.
+
 ```json
+// 예시 1: 분석 완료 알림
 {
     "notification_id": 1,
     "type": "ANALYSIS_COMPLETE",
     "resource_id": "10053",
     "message": "인형 'doll-123'의 분석이 완료되었습니다. (결과: DANGER)",
     "is_read": false,
-    "created_at": "2025-10-17T17:32:10.189748"
+    "created_at": "2025-10-17T17:32:10"
+}
+```
+```json
+// 예시 2: 시니어 상태 변경 알림
+{
+    "notification_id": 2,
+    "type": "SENIOR_STATE_CHANGED",
+    "resource_id": "1",
+    "message": "'김어르신'님의 상태가 POSITIVE에서 DANGER로 변경되었습니다. (사유: 분석 ID: 10053의 결과로 상태 변경)",
+    "is_read": false,
+    "created_at": "2025-10-17T17:32:11"
 }
 ```
 
@@ -975,11 +1054,11 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 [
     {
         "notification_id": 2,
-        "type": "ANALYSIS_COMPLETE",
-        "resource_id": "10054",
-        "message": "인형 'doll-456'의 분석이 완료되었습니다. (결과: POSITIVE)",
+        "type": "SENIOR_STATE_CHANGED",
+        "resource_id": "1",
+        "message": "'김어르신'님의 상태가 POSITIVE에서 DANGER로 변경되었습니다. (사유: 분석 ID: 10053의 결과로 상태 변경)",
         "is_read": false,
-        "created_at": "2025-10-17T17:33:33.606397"
+        "created_at": "2025-10-17T17:32:11"
     },
     {
         "notification_id": 1,
@@ -987,7 +1066,7 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
         "resource_id": "10053",
         "message": "인형 'doll-123'의 분석이 완료되었습니다. (결과: DANGER)",
         "is_read": true,
-        "created_at": "2025-10-17T17:32:10.189748"
+        "created_at": "2025-10-17T17:32:10"
     }
 ]
 ```
@@ -1165,8 +1244,10 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 | 특정 시니어 조회 | `GET` | `/seniors/{id}` | ADMIN | Path: `id` | `Senior` 상세 객체 |
 | 시니어 정보 수정 | `PUT` | `/seniors/{id}` | ADMIN | Path: `id`, Form-data: `senior`(json), `photo`(file) | 수정된 `Senior` 객체 |
 | 시니어 삭제 | `DELETE` | `/seniors/{id}` | ADMIN | Path: `id` | `204 No Content` |
+| 시니어 상태 변경 | `POST` | `/seniors/{id}/state` | ADMIN | Path: `id`, Body: `newState`, `reason`, ... | `200 OK` |
+| 상태 변경 이력 조회| `GET` | `/seniors/{id}/state-history`| ADMIN | Path: `id` | 상태 변경 이력 배열 |
 | **분석** | | | | | |
-| 대화 파일 분석 | `POST` | `/analyze` | ADMIN | Form-data: `file` | `201 Created`, `AnalysisResult` 객체 |
+| 대화 파일 분석 | `POST` | `/analyze` | ADMIN | Form-data: `file` | `201 Created`, `AnalysisResult` 객체(ID 포함) |
 | 분석 결과 목록 조회 | `GET` | `/analyze` | ADMIN | Query: 검색 조건, 페이징 | 페이징된 `OverallResult` 목록 |
 | 특정 분석 결과 조회 | `GET` | `/analyze/{id}` | ADMIN | Path: `id` | `AnalysisDetail` 객체 |
 | 분석 결과 삭제 | `DELETE` | `/analyze/{id}` | ADMIN | Path: `id` | `204 No Content` |
