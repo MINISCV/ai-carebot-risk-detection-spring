@@ -41,12 +41,13 @@ import lombok.extern.slf4j.Slf4j;
 public class SeniorService {
 	private final SeniorRepository seniorRepository;
 	private final DollRepository dollRepository;
-
+	
 	@Value("${senior.photo.upload-path}")
     private String uploadPath;
 	
 	@Transactional
 	public SeniorResponseDto createSenior(SeniorRequestDto requestDto, MultipartFile photo) {
+		log.info("신규 시니어 등록 시작: name={}", requestDto.name());
 		Doll doll = dollRepository.findByIdWithSenior(requestDto.dollId())
 				.orElseThrow(() -> new EntityNotFoundException("인형 " + requestDto.dollId() + " 없음."));
 		
@@ -58,17 +59,19 @@ public class SeniorService {
 		Senior senior = dtoToSenior(requestDto, photoFilename);
 		senior.changeDoll(doll);
 		seniorRepository.save(senior);
-		
+        log.info("신규 시니어 등록 완료: seniorId={}, dollId={}", senior.getId(), doll.getId());
 		return new SeniorResponseDto(senior);
 	}
 
 	@Transactional(readOnly = true)
     public Page<SeniorListResponseDto> searchSeniors(SeniorSearchCondition condition, Pageable pageable) {
+		log.info("시니어 목록 검색: condition={}, pageable={}", condition, pageable);
         return seniorRepository.searchSeniors(condition, pageable);
     }
 	
 	@Transactional(readOnly = true)
     public SeniorDetailResponseDto getSeniorDetails(Long id) {
+		log.info("특정 시니어 상세 정보 조회: seniorId={}", id);
         Senior senior = seniorRepository.findDetailsById(id)
                 .orElseThrow(() -> new EntityNotFoundException("시니어 " + id + "는 없음."));
 
@@ -83,10 +86,12 @@ public class SeniorService {
 
 	@Transactional
 	public SeniorResponseDto updateSenior(Long id, SeniorRequestDto seniorDto, MultipartFile photo) {
+		log.info("시니어 정보 수정 시작: seniorId={}", id);
 		Senior existingSenior = seniorRepository.findByIdWithDoll(id)
 				.orElseThrow(() -> new EntityNotFoundException("시니어 " + id + "는 없음."));
 
 		if (!existingSenior.getDoll().getId().equals(seniorDto.dollId())) {
+			log.info("시니어 인형 변경: seniorId={}, oldDoll={}, newDoll={}", id, existingSenior.getDoll().getId(), seniorDto.dollId());
 			Doll newDoll = dollRepository.findById(seniorDto.dollId()).orElseThrow(
 					() -> new EntityNotFoundException("인형 " + seniorDto.dollId() + "없음."));
 			if (newDoll.getSenior() != null)
@@ -103,12 +108,13 @@ public class SeniorService {
         }
 
 		updateSenior(existingSenior, seniorDto, newPhotoFilename);
-		 
+		log.info("시니어 정보 수정 완료: seniorId={}", id);
 		return new SeniorResponseDto(existingSenior);
 	}
 
 	@Transactional
 	public void deleteSenior(Long id) {
+		log.info("시니어 삭제 요청: seniorId={}", id);
 		Senior senior = seniorRepository.findByIdWithDoll(id)
 				.orElseThrow(() -> new EntityNotFoundException("시니어 " + id + "는 없음."));
 		
@@ -116,9 +122,12 @@ public class SeniorService {
             deletePhoto(senior.getPhoto());
         }
 		
-		if (senior.getDoll() != null)
+		if (senior.getDoll() != null) {
+			log.info("시니어 삭제로 인한 인형 할당 해제: dollId={}", senior.getDoll().getId());
 	        senior.changeDoll(null);
+		}
 		seniorRepository.deleteById(id);
+		log.info("시니어 삭제 완료: seniorId={}", id);
 	}
 	
 	private String savePhoto(MultipartFile photo) {

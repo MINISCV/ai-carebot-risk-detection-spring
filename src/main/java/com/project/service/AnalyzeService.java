@@ -58,8 +58,12 @@ public class AnalyzeService {
 
     @Transactional
     public AnalysisResponseWithIdDto analyzeAndSave(MultipartFile file) {
-        if (file == null || file.isEmpty())
+    	log.info("대화 분석 요청 수신: fileName={}", file.getOriginalFilename());
+        if (file == null || file.isEmpty()) {
+        	log.warn("분석 요청 파일이 비어있음");
             throw new InvalidFileException("파일이 없거나 비어있습니다.");
+        }
+        log.info("대화 분석 시작: fileName={}", file.getOriginalFilename());
         List<DialogueAnalysisRequestDto> reqeustDialogues = new ArrayList<>();
 
         DateTimeFormatter csvFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd H:mm:ss");
@@ -82,6 +86,7 @@ public class AnalyzeService {
                             .orElseThrow(() -> new EntityNotFoundException("인형 " + dollId + "가 없음."));
                     if(doll.getSenior() == null)
                     	throw new EntityNotFoundException("인형에 할당된 시니어가 없음.");
+                    log.info("CSV 파일 검증 완료: dollId={}, seniorId={}", doll.getId(), doll.getSenior().getId());
                     firstCheck = false;
                 }
                 
@@ -99,11 +104,12 @@ public class AnalyzeService {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<List<DialogueAnalysisRequestDto>> requestEntity = new HttpEntity<>(reqeustDialogues, headers);
-        log.info("Python 서버로 분석 요청중");
+        log.info("Python 서버로 분석 요청: url={}, dialogueCount={}", pythonServerUrl, reqeustDialogues.size());
         AnalysisResponseDto apiResponse = restTemplate.postForObject(
                 pythonServerUrl + "/analyze",
                 requestEntity,
                 AnalysisResponseDto.class);
+        log.info("Python 서버로부터 분석 결과 수신 완료");
         AnalysisResponseWithIdDto result = saveAnalysisResult(apiResponse);
         notificationService.sendAnalysisCompleteNotificationToAdmins(result);
         return result;
@@ -112,6 +118,7 @@ public class AnalyzeService {
     @Transactional
     private AnalysisResponseWithIdDto saveAnalysisResult(AnalysisResponseDto responseDto) {
         String responseDollId = responseDto.overallResult().dollId();
+        log.info("분석 결과 저장 시작: dollId={}", responseDollId);
         
         Doll doll = dollRepository.findByIdWithSenior(responseDollId)
                 .orElseThrow(() -> new EntityNotFoundException("인형 " + responseDollId + "가 없음."));
@@ -153,17 +160,19 @@ public class AnalyzeService {
 
         AnalysisResponseWithIdDto result = new AnalysisResponseWithIdDto(overallResultRepository.save(overallResult).getId(), responseDto.overallResult(), responseDto.dialogueResult());
         overallResult.getSenior().updateState(overallResult.getLabel());
-        log.info("인형 {}에 대한 분석이 저장되었습니다.", responseDollId);
+        log.info("분석 결과 저장 완료: overallResultId={}, dollId={}", result.id(), responseDollId);
         return result;
     }
 
     @Transactional(readOnly = true)
     public Page<OverallResultListResponseDto> searchOverallResults(OverallResultSearchCondition condition, Pageable pageable) {
-        return overallResultRepository.searchOverallResults(condition, pageable);
+    	log.info("분석 결과 목록 검색: condition={}, pageable={}", condition, pageable);
+    	return overallResultRepository.searchOverallResults(condition, pageable);
     }
     
     @Transactional(readOnly = true)
     public AnalysisDetailResponseDto getAnalysisDetails(Long id) {
+    	log.info("특정 분석 상세 결과 조회: overallResultId={}", id);
         OverallResult overallResult = overallResultRepository.findByIdWithDetails(id)
                 .orElseThrow(() -> new EntityNotFoundException("ID: " + id + " 분석을 찾을 수 없습니다."));
         
@@ -172,9 +181,11 @@ public class AnalyzeService {
     
     @Transactional
 	public void deleteAnalysis(Long id) {
+    	log.info("분석 결과 삭제 요청: overallResultId={}", id);
     	if(!overallResultRepository.existsById(id))
     		throw new EntityNotFoundException("ID: " + id + " 분석을 찾을 수 없습니다.");
     	overallResultRepository.deleteById(id);
+    	log.info("분석 결과 삭제 완료: overallResultId={}", id);
 	}
 	
     private ConfidenceScores dtoToConfidenceScores(ConfidenceScoresDto dto) {
