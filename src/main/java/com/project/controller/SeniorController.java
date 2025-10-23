@@ -1,6 +1,7 @@
 package com.project.controller;
 
 import java.net.URI;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
@@ -27,6 +28,7 @@ import com.project.dto.response.CustomPageDto;
 import com.project.dto.response.SeniorDetailResponseDto;
 import com.project.dto.response.SeniorListResponseDto;
 import com.project.dto.response.SeniorResponseDto;
+import com.project.dto.response.SeniorStateHistoryResponseDto;
 import com.project.service.SeniorService;
 
 import jakarta.validation.Valid;
@@ -63,6 +65,12 @@ public class SeniorController {
     public ResponseEntity<SeniorDetailResponseDto> getSeniorDetails(@PathVariable Long id) {
         SeniorDetailResponseDto seniorDetails = seniorService.getSeniorDetails(id);
         return ResponseEntity.ok(seniorDetails);
+    }
+    
+    @GetMapping("/{id}/state-history")
+    public ResponseEntity<List<SeniorStateHistoryResponseDto>> getSeniorStateHistory(@PathVariable Long id) {
+        List<SeniorStateHistoryResponseDto> history = seniorService.getSeniorStateHistory(id);
+        return ResponseEntity.ok(history);
     }
     
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

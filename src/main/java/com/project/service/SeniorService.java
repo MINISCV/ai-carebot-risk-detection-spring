@@ -31,9 +31,12 @@ import com.project.dto.response.RecentOverallResultDto;
 import com.project.dto.response.SeniorDetailResponseDto;
 import com.project.dto.response.SeniorListResponseDto;
 import com.project.dto.response.SeniorResponseDto;
+import com.project.dto.response.SeniorStateHistoryResponseDto;
 import com.project.event.SeniorStateChangedEvent;
 import com.project.persistence.DollRepository;
+import com.project.persistence.OverallResultRepository;
 import com.project.persistence.SeniorRepository;
+import com.project.persistence.SeniorStateHistoryRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +48,8 @@ import lombok.extern.slf4j.Slf4j;
 public class SeniorService {
 	private final SeniorRepository seniorRepository;
 	private final DollRepository dollRepository;
+	private final OverallResultRepository overallResultRepository;
+	private final SeniorStateHistoryRepository seniorStateHistoryRepository;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Value("${senior.photo.upload-path}")
@@ -95,6 +100,17 @@ public class SeniorService {
 
         return new SeniorDetailResponseDto(senior, recentResults);
     }
+	
+	@Transactional(readOnly = true)
+    public List<SeniorStateHistoryResponseDto> getSeniorStateHistory(Long seniorId) {
+        log.info("시니어 상태 변경 이력 조회 요청: seniorId={}", seniorId);
+        if (!seniorRepository.existsById(seniorId))
+            throw new EntityNotFoundException("시니어 " + seniorId + "는 없음.");
+        return seniorStateHistoryRepository.findBySeniorIdOrderByChangedAtDesc(seniorId)
+                .stream()
+                .map(SeniorStateHistoryResponseDto::from)
+                .collect(Collectors.toList());
+    }
 
 	@Transactional
 	public SeniorResponseDto updateSenior(Long id, SeniorRequestDto seniorDto, MultipartFile photo) {
@@ -130,6 +146,15 @@ public class SeniorService {
 	    Senior senior = seniorRepository.findById(seniorId)
 	            .orElseThrow(() -> new EntityNotFoundException("시니어 " + seniorId + "는 없음."));
 
+	    if (requestDto.overallResultId() != null) {
+            OverallResult overallResult = overallResultRepository.findById(requestDto.overallResultId())
+                    .orElseThrow(() -> new EntityNotFoundException("분석 ID " + requestDto.overallResultId() + "를 찾을 수 없습니다."));
+            if (!overallResult.getSenior().getId().equals(seniorId))
+                throw new IllegalArgumentException("해당 분석 결과는 senior ID " + seniorId + "에 속하지 않습니다.");
+            overallResult.resolve();
+            log.info("분석 ID {}가 조치 완료 처리되었습니다.", requestDto.overallResultId());
+        }
+	    
 	    Risk previousState = senior.getState();
 	    Risk newState = requestDto.newState();
 

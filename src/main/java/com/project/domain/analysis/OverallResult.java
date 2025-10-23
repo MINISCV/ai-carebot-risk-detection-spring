@@ -71,6 +71,10 @@ public class OverallResult {
         this.treatmentPlan = treatmentPlan;
     }
     
+    public void resolve() {
+        this.isResolved = true;
+    }
+    
     public void addDialogue(Dialogue dialogue) {
         this.dialogues.add(dialogue);
         dialogue.setOverallResult(this);

@@ -1,14 +1,15 @@
 package com.project.listener;
 
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.project.domain.senior.SeniorStateHistory;
 import com.project.event.SeniorStateChangedEvent;
 import com.project.persistence.SeniorStateHistoryRepository;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Component
@@ -17,7 +18,7 @@ public class SeniorStateHistoryListener {
     private final SeniorStateHistoryRepository historyRepository;
 
     @EventListener
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    @Transactional
     public void handleSeniorStateChangedEvent(SeniorStateChangedEvent event) {
     	log.info("SeniorStateChangedEvent 수신: seniorId={}, newState={}, reason={}",
                 event.senior().getId(), event.newState(), event.reason());
