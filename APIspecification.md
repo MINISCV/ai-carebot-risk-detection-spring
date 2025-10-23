@@ -603,7 +603,8 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
             "id": 10,
             "label": "POSITIVE",
             "summary": "김어르신님의 최근 대화 분석 결과, POSITIVE 수준의 주의가 필요합니다.",
-            "timestamp": "2025-09-28T14:00:00"
+            "timestamp": "2025-09-28T14:00:00",
+            "is_resolved": false
         }
     ]
 }
@@ -750,6 +751,7 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
             "emergency": 0.0010
         },
         "treatment_plan": "특별한 위험 징후는 없습니다. 지속적으로 모니터링해 주세요.",
+        "is_resolved": false,
         "full_text": "오늘 너무 덥네 지금 몇 시야 조금 있다가 밥 먹어야 겠다",
         "reason": {
             "evidence": [
@@ -857,7 +859,8 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
             "age": 80,
             "sex": "FEMALE",
             "gu": "동구",
-            "dong": "중앙동"
+            "dong": "중앙동",
+            "is_resolved": false
         }
     ],
     "page_number": 0,
@@ -902,6 +905,7 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
     ],
     "summary": "부정적인 단어 사용 빈도가 높고, 외로움을 표현하는 문장이 발견되었습니다.",
     "treatment_plan": "주의가 필요한 발화가 감지되었습니다. 반복될 경우 주기적인 안부 확인 및 말벗 서비스 제공을 권장합니다.",
+    "is_resolved": false,
     "dialogues": [
         {
             "id": 1,
@@ -986,7 +990,8 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
             "dong": "둔산1동",
             "summary": "도움을 요청하는 다급한 목소리가 감지되었습니다.",
             "treatment_plan": "매우 위급한 발화가 감지되었습니다. 신속하게 상황을 파악한 후 관계 기관에 신고하거나 적극적인 대응이 요구됩니다.",
-            "timestamp": "2025-09-30T10:30:00"
+            "timestamp": "2025-09-30T10:30:00",
+            "is_resolved": false
         },
         {
             "overall_result_id": 8,
@@ -998,7 +1003,8 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
             "dong": "온천1동",
             "summary": "가슴 통증을 호소하는 대화가 발견되었습니다.",
             "treatment_plan": "매우 위급한 발화가 감지되었습니다. 신속하게 상황을 파악한 후 관계 기관에 신고하거나 적극적인 대응이 요구됩니다.",
-            "timestamp": "2025-09-30T09:00:00"
+            "timestamp": "2025-09-30T09:00:00",
+            "is_resolved": false
         }
     ]
 }
