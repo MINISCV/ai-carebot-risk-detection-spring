@@ -20,6 +20,7 @@ public record AnalysisDetailResponseDto(
         String summary,
         String treatmentPlan,
         boolean isResolved,
+        Risk resolvedLabel,
         
         List<DialogueDetailDto> dialogues
 ) {
@@ -46,6 +47,7 @@ public record AnalysisDetailResponseDto(
                 overallResult.getReason().getSummary(),
                 overallResult.getTreatmentPlan(),
                 overallResult.isResolved(),
+                overallResult.getResolvedLabel(),
                 dialogueDtos
         );
     }
