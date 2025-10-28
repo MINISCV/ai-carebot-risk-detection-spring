@@ -1,5 +1,6 @@
 package com.project.persistence;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +24,6 @@ public interface OverallResultRepository extends JpaRepository<OverallResult, Lo
      Optional<OverallResult> findByIdWithDetails(@Param("id") Long id);
     
     List<OverallResult> findTop5BySeniorIdOrderByTimestampDesc(Long seniorId);
+    
+    boolean existsBySeniorIdAndTimestampAfter(Long seniorId, LocalDateTime timestamp);
 }

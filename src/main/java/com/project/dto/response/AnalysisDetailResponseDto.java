@@ -21,10 +21,11 @@ public record AnalysisDetailResponseDto(
         String treatmentPlan,
         boolean isResolved,
         Risk resolvedLabel,
+        boolean isEditable,
         
         List<DialogueDetailDto> dialogues
 ) {
-    public static AnalysisDetailResponseDto from(OverallResult overallResult) {
+    public static AnalysisDetailResponseDto from(OverallResult overallResult, boolean isEditable) {
         ConfidenceScoresDto scoresDto = new ConfidenceScoresDto(
                 overallResult.getConfidenceScores().getPositive(),
                 overallResult.getConfidenceScores().getDanger(),
@@ -48,6 +49,7 @@ public record AnalysisDetailResponseDto(
                 overallResult.getTreatmentPlan(),
                 overallResult.isResolved(),
                 overallResult.getResolvedLabel(),
+                isEditable,
                 dialogueDtos
         );
     }
