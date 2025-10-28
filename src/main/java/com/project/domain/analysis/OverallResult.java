@@ -58,11 +58,8 @@ public class OverallResult {
     
     private boolean isResolved;
     
-
     @Enumerated(EnumType.STRING)
     private Risk resolvedLabel;
-    
-    private boolean isEditable;
         
     @OneToMany(mappedBy = "overallResult", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Dialogue> dialogues = new ArrayList<>();

@@ -248,6 +248,8 @@ public class SeniorService {
         		.detail(dto.addressDetail())
         		.gu(dto.gu())
         		.dong(dto.dong())
+                .latitude(dto.latitude())
+                .longitude(dto.longitude())
         		.build();
     }
 	
