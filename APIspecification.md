@@ -1,8 +1,8 @@
 # **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석 API 명세서**
 
-**버전:** 1.5.0
+**버전:** 1.6.0
 
-**최종 수정일:** 2025-10-23
+**최종 수정일:** 2025-10-28
 
 ---
 
@@ -473,6 +473,8 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 | `address_detail` | `string` | N | 상세 주소 (예: 101동 1204호) |
 | `gu` | `string` | Y | 주소(구). `GET /administrative-districts`를 통해 얻은 `gu_code` 값을 사용합니다. (예: `DONG_GU`) |
 | `dong` | `string` | Y | 주소(법정동). `GET /administrative-districts`를 통해 얻은 `dong_code` 값을 사용합니다. (예: `WON_DONG`) |
+| `latitude` | `number` | Y | 주소의 위도 |
+| `longitude` | `number` | Y | 주소의 경도 |
 | `note` | `string` | N | 시니어 관련 특이사항 |
 | `guardian_name`|`string` | Y | 보호자 이름 |
 | `guardian_phone`|`string` | Y | 보호자 연락처 (010-1234-5678 형식) |
@@ -573,7 +575,7 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 | :--- | :--- | :--- | :--- |
 | `id` | `long`| Y | 조회할 시니어의 ID |
 
-*   **Success Response (`200 OK`):** 
+*   **Success Response (`200 OK`):**
     *   조회된 시니어의 상세 정보를 반환합니다.
 ```json
 {
@@ -906,6 +908,8 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
     "summary": "부정적인 단어 사용 빈도가 높고, 외로움을 표현하는 문장이 발견되었습니다.",
     "treatment_plan": "주의가 필요한 발화가 감지되었습니다. 반복될 경우 주기적인 안부 확인 및 말벗 서비스 제공을 권장합니다.",
     "is_resolved": false,
+    "resolved_label": null,
+    "is_editable": true,
     "dialogues": [
         {
             "id": 1,
@@ -963,13 +967,11 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 
 #### **6.1. `GET /dashboard` - 대시보드 데이터 조회**
 
-대시보드에 필요한 데이터를 조회합니다. (시니어 현황, 긴급 분석 결과)
-
-*   **Description:** 시니어 상태별 인원수와 최근 긴급/위험 분석 결과 상위 10개를 조회합니다.
+*   **Description:** 대시보드에 필요한 데이터를 조회합니다. (시니어 현황, 상태별 시니어 목록)
 *   **인증:** `ADMIN` 권한 필요
 
 *   **Success Response (`200 OK`):**
-    *   대시보드 데이터를 반환합니다.
+    *   대시보드 데이터를 반환합니다. `seniors_by_state`는 각 상태(`positive`, `danger`, `critical`, `emergency`)를 key로 가지며, 해당 상태에 속한 시니어 정보 배열을 value로 갖습니다.
 ```json
 {
     "state_count": {
@@ -979,34 +981,44 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
         "critical": 1,
         "emergency": 1
     },
-    "recent_urgent_results": [
-        {
-            "overall_result_id": 5,
-            "label": "EMERGENCY",
-            "senior_name": "박긴급",
-            "age": 85,
-            "sex": "MALE",
-            "gu": "서구",
-            "dong": "둔산1동",
-            "summary": "도움을 요청하는 다급한 목소리가 감지되었습니다.",
-            "treatment_plan": "매우 위급한 발화가 감지되었습니다. 신속하게 상황을 파악한 후 관계 기관에 신고하거나 적극적인 대응이 요구됩니다.",
-            "timestamp": "2025-09-30T10:30:00",
-            "is_resolved": false
-        },
-        {
-            "overall_result_id": 8,
-            "label": "CRITICAL",
-            "senior_name": "이위험",
-            "age": 78,
-            "sex": "FEMALE",
-            "gu": "유성구",
-            "dong": "온천1동",
-            "summary": "가슴 통증을 호소하는 대화가 발견되었습니다.",
-            "treatment_plan": "매우 위급한 발화가 감지되었습니다. 신속하게 상황을 파악한 후 관계 기관에 신고하거나 적극적인 대응이 요구됩니다.",
-            "timestamp": "2025-09-30T09:00:00",
-            "is_resolved": false
-        }
-    ]
+    "seniors_by_state": {
+        "positive": [],
+        "danger": [],
+        "critical": [
+            {
+                "senior_id": 8,
+                "name": "이위험",
+                "age": 78,
+                "sex": "FEMALE",
+                "address": "대전광역시 유성구 온천1동",
+                "latitude": 36.355,
+                "longitude": 127.338,
+                "last_state_changed_at": "2025-09-30T09:00:00",
+                "latest_overall_result_id": 8,
+                "summary": "가슴 통증을 호소하는 대화가 발견되었습니다.",
+                "treatment_plan": "위험 수준의 발화가 감지되었습니다. 주기적인 안부 확인 및 말벗 서비스 제공을 권장합니다.",
+                "resolved_label": null,
+                "is_resolved": false
+            }
+        ],
+        "emergency": [
+            {
+                "senior_id": 5,
+                "name": "박긴급",
+                "age": 85,
+                "sex": "MALE",
+                "address": "대전광역시 서구 둔산1동",
+                "latitude": 36.352,
+                "longitude": 127.385,
+                "last_state_changed_at": "2025-09-30T10:30:00",
+                "latest_overall_result_id": 5,
+                "summary": "도움을 요청하는 다급한 목소리가 감지되었습니다.",
+                "treatment_plan": "매우 위급한 발화가 감지되었습니다. 신속하게 상황을 파악한 후 관계 기관에 신고하거나 적극적인 대응이 요구됩니다.",
+                "resolved_label": null,
+                "is_resolved": false
+            }
+        ]
+    }
 }
 ```
 
