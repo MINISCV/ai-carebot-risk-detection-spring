@@ -1,8 +1,8 @@
 # **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석 API 명세서**
 
-**버전:** 1.6.0
+**버전:** 1.7.0
 
-**최종 수정일:** 2025-10-28
+**최종 수정일:** 2025-10-29
 
 ---
 
@@ -1110,6 +1110,26 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 
 ---
 
+#### **7.4. `PUT /notifications/read-all` - 모든 알림 읽음 처리**
+
+*   **Description:** 현재 로그인한 사용자의 모든 알림을 '읽음' 상태로 변경합니다.
+*   **인증:** `ADMIN` 권한 필요
+
+*   **Success Response (`200 OK`):**
+    *   응답 본문이 없습니다.
+
+---
+
+#### **7.5. `DELETE /notifications` - 모든 알림 삭제**
+
+*   **Description:** 현재 로그인한 사용자의 모든 알림을 삭제합니다.
+*   **인증:** `ADMIN` 권한 필요
+
+*   **Success Response (`204 No Content`):**
+    *   응답 본문이 없습니다.
+
+---
+
 ### **8. 공통 (Common)**
 
 #### **8.1. `GET /administrative-districts` - 전체 법정구역 목록 조회**
@@ -1275,5 +1295,7 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 | 실시간 알림 구독 | `GET` | `/notifications/subscribe`| ADMIN | - | `text/event-stream` 형식의 실시간 이벤트 |
 | 알림 목록 조회 | `GET` | `/notifications`| ADMIN | - | `Notification` 객체 배열 |
 | 알림 읽음 처리 | `POST` | `/notifications/{id}/read`| ADMIN | Path: `id` | `200 OK` |
+| 모든 알림 읽음 처리 | `PUT` | `/notifications/read-all`| ADMIN | - | `200 OK` |
+| 모든 알림 삭제 | `DELETE`| `/notifications` | ADMIN | - | `204 No Content` |
 | **공통** | | | | | |
 | 법정구역 목록 조회 | `GET` | `/administrative-districts`| 불필요 | - | '구' 및 '법정동' 목록 |
