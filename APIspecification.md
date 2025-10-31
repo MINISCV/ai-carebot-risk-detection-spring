@@ -1,8 +1,8 @@
 # **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석 API 명세서**
 
-**버전:** 1.7.0
+**버전:** 1.7.1
 
-**최종 수정일:** 2025-10-29
+**최종 수정일:** 2025-10-31
 
 ---
 
@@ -997,6 +997,7 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
                 "latest_overall_result_id": 8,
                 "summary": "가슴 통증을 호소하는 대화가 발견되었습니다.",
                 "treatment_plan": "위험 수준의 발화가 감지되었습니다. 주기적인 안부 확인 및 말벗 서비스 제공을 권장합니다.",
+                "pre_resolved_label": "CRITICAL",
                 "resolved_label": null,
                 "is_resolved": false
             }
@@ -1014,6 +1015,7 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
                 "latest_overall_result_id": 5,
                 "summary": "도움을 요청하는 다급한 목소리가 감지되었습니다.",
                 "treatment_plan": "매우 위급한 발화가 감지되었습니다. 신속하게 상황을 파악한 후 관계 기관에 신고하거나 적극적인 대응이 요구됩니다.",
+                "pre_resolved_label": "EMERGENCY",
                 "resolved_label": null,
                 "is_resolved": false
             }

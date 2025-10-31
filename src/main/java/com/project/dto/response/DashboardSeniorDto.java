@@ -21,6 +21,7 @@ public record DashboardSeniorDto(
         Long latestOverallResultId,
         String summary,
         String treatmentPlan,
+        Risk preResolvedLabel,
         Risk resolvedLabel,
         boolean isResolved
 ) {
@@ -28,6 +29,7 @@ public record DashboardSeniorDto(
         Long latestOverallResultId = latestResult != null ? latestResult.getId() : null;
         String summary = latestResult != null ? latestResult.getReason().getSummary() : null;
         String treatmentPlan = latestResult != null ? latestResult.getTreatmentPlan() : null;
+        Risk preResolvedLabel = latestResult != null ? latestResult.getLabel() : null;
         Risk resolvedLabel = latestResult != null ? latestResult.getResolvedLabel() : null;
         boolean isResolved = latestResult != null && latestResult.isResolved();
 
@@ -43,6 +45,7 @@ public record DashboardSeniorDto(
                 latestOverallResultId,
                 summary,
                 treatmentPlan,
+                preResolvedLabel,
                 resolvedLabel,
                 isResolved
         );
