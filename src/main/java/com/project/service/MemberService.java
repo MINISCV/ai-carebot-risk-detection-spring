@@ -3,6 +3,7 @@ package com.project.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -58,7 +59,7 @@ public class MemberService {
         Member member = findMemberByUsername(username);
         return new MemberDto(member);
     }
-
+    @PreAuthorize("#username == authentication.name")
     @Transactional
     public MemberDto updateMember(String username, MemberUpdateRequestDto requestDto) {
     	log.info("회원 정보 수정 시도: username={}, role={}, enabled={}", username, requestDto.role(), requestDto.enabled());
@@ -67,7 +68,7 @@ public class MemberService {
         log.info("회원 정보 수정 완료: username={}", username);
         return new MemberDto(member);
     }
-
+    @PreAuthorize("#username == authentication.name")
     @Transactional
     public void changePassword(String username, String newPassword) {
         log.info("비밀번호 변경 시도: username={}", username);
