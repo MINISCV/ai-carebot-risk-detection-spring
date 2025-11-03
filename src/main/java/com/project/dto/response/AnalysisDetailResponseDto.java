@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public record AnalysisDetailResponseDto(
+		Long id,
         String seniorName,
         String diseases,
         int age,
@@ -38,6 +39,7 @@ public record AnalysisDetailResponseDto(
                 .collect(Collectors.toList());
 
         return new AnalysisDetailResponseDto(
+        		overallResult.getSenior().getId(),
                 overallResult.getSenior().getName(),
                 overallResult.getSenior().getMedicalInfo().getDiseases(),
                 Period.between(overallResult.getSenior().getBirthDate(), LocalDate.now()).getYears(),
