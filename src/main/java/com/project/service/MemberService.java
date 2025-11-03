@@ -59,7 +59,7 @@ public class MemberService {
         Member member = findMemberByUsername(username);
         return new MemberDto(member);
     }
-    @PreAuthorize("#username == authentication.name")
+    @PreAuthorize("#username == authentication.name or 'admin' == authentication.name")
     @Transactional
     public MemberDto updateMember(String username, MemberUpdateRequestDto requestDto) {
     	log.info("회원 정보 수정 시도: username={}, role={}, enabled={}", username, requestDto.role(), requestDto.enabled());
@@ -68,7 +68,7 @@ public class MemberService {
         log.info("회원 정보 수정 완료: username={}", username);
         return new MemberDto(member);
     }
-    @PreAuthorize("#username == authentication.name")
+    @PreAuthorize("#username == authentication.name or 'admin' == authentication.name")
     @Transactional
     public void changePassword(String username, String newPassword) {
         log.info("비밀번호 변경 시도: username={}", username);
