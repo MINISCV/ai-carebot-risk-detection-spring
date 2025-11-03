@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public record AnalysisDetailResponseDto(
-		Long id,
+		Long seniorId,
         String seniorName,
         String diseases,
         int age,
