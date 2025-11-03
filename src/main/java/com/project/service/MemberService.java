@@ -78,6 +78,7 @@ public class MemberService {
     }
 
     @Transactional
+    @PreAuthorize("'admin' == authentication.name")
     public void deleteMember(String username) {
     	log.info("회원 삭제 시도: username={}", username);
         if (!memberRepository.existsByUsername(username))
