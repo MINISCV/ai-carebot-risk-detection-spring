@@ -1,8 +1,8 @@
 # **고독사 예방을 위한 시니어케어 돌봄로봇 데이터 분석 API 명세서**
 
-**버전:** 1.7.1
+**버전:** 1.8.0
 
-**최종 수정일:** 2025-10-31
+**최종 수정일:** 2025-11-03
 
 ---
 
@@ -274,7 +274,7 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 *   **Error Responses:**
     *   `404 Not Found`: 해당 username의 회원이 존재하지 않을 경우 발생합니다.
 ---
-#### **2.4. `PUT /members/{username}` - 회원 정보 수정**
+#### **2.4. `PATCH /members/{username}` - 회원 정보 수정**
 
 특정 회원의 역할(role) 및 활성화(enabled) 상태를 수정합니다.
 
@@ -291,8 +291,8 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 
 | 필드 | 타입 | 필수 | 설명 |
 | :--- | :--- | :--- | :--- |
-| `role` | `string` | Y | 변경할 회원의 역할. 허용 값: `"ROLE_ADMIN"`, `"ROLE_MEMBER"` |
-| `enabled` | `boolean`| Y | 계정 활성화 여부 |
+| `role` | `string` | N | 변경할 회원의 역할. 허용 값: `"ROLE_ADMIN"`, `"ROLE_MEMBER"` |
+| `enabled` | `boolean`| N | 계정 활성화 여부 |
 
 *   **Example Request Body:**
 ```json
@@ -315,7 +315,40 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 *   **Error Responses:**
     *   `404 Not Found`: 해당 username의 회원이 존재하지 않을 경우 발생합니다.
 ---
-#### **2.5. `DELETE /members/{username}` - 회원 삭제**
+#### **2.5. `PATCH /members/{username}/password` - 회원 비밀번호 변경**
+
+특정 회원의 비밀번호를 변경합니다.
+
+*   **Description:** Username으로 특정 회원의 비밀번호를 변경합니다.
+*   **인증:** `ADMIN` 권한 필요
+
+*   **Path Parameters:**
+
+| 파라미터 | 타입 | 필수 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `username` | `string`| Y | 수정할 회원의 username |
+
+*   **Request Body:**
+
+| 필드 | 타입 | 필수 | 설명 |
+| :--- | :--- | :--- | :--- |
+| `new_password` | `string`| Y | 설정할 새 비밀번호 |
+
+*   **Example Request Body:**
+```json
+{
+    "new_password": "new_secure_password123"
+}
+```
+
+*   **Success Response (`200 OK`):**
+    *   응답 본문이 없습니다.
+
+*   **Error Responses:**
+    *   `400 Bad Request`: `new_password`가 비어있을 경우 발생합니다.
+    *   `404 Not Found`: 해당 username의 회원이 존재하지 않을 경우 발생합니다.
+---
+#### **2.6. `DELETE /members/{username}` - 회원 삭제**
 
 특정 회원을 시스템에서 삭제합니다.
 
@@ -1272,7 +1305,8 @@ API 전반에 걸쳐 사용되는 Enum 값들에 대한 정의입니다. **요�
 | 회원 가입 | `POST` | `/members` | 불필요 | Body: `username`, `password` | `201 Created`, 생성된 `Member` 객체 |
 | 전체 회원 조회 | `GET` | `/members` | ADMIN | - | `Member` 객체 배열 |
 | 특정 회원 조회 | `GET` | `/members/{username}` | ADMIN | Path: `username` | `Member` 객체 |
-| 회원 정보 수정 | `PUT` | `/members/{username}` | ADMIN | Path: `username`, Body: `role`, `enabled` | 수정된 `Member` 객체 |
+| 회원 정보 수정 | `PATCH` | `/members/{username}` | ADMIN | Path: `username`, Body: `role`, `enabled` | 수정된 `Member` 객체 |
+| 비밀번호 변경 | `PATCH` | `/members/{username}/password` | ADMIN | Path: `username`, Body: `new_password` | `200 OK` |
 | 회원 삭제 | `DELETE` | `/members/{username}` | ADMIN | Path: `username` | `204 No Content` |
 | **인형** | | | | | |
 | 인형 등록 | `POST` | `/dolls` | ADMIN | Body: `id` | `201 Created`, 생성된 `Doll` 객체 |
