@@ -72,6 +72,9 @@ public class Senior {
 	
 	@OneToMany(mappedBy = "senior", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<OverallResult> overallResults = new ArrayList<>();
+	
+	@OneToMany(mappedBy = "senior", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SeniorStateHistory> stateHistories = new ArrayList<>();
         
     @Builder
     public Senior(String name, String photo, LocalDate birthDate, Sex sex, Residence residence, String phone, 
