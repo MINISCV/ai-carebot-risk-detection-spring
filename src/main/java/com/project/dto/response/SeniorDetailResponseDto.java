@@ -1,12 +1,12 @@
 package com.project.dto.response;
 
+import java.time.LocalDate;
+import java.util.List;
+
 import com.project.domain.analysis.Risk;
 import com.project.domain.senior.Residence;
 import com.project.domain.senior.Senior;
 import com.project.domain.senior.Sex;
-
-import java.time.LocalDate;
-import java.util.List;
 
 public record SeniorDetailResponseDto(
         Long id,
@@ -22,6 +22,8 @@ public record SeniorDetailResponseDto(
 		String addressDetail,
 		String gu,
 		String dong,
+        Double latitude,
+        Double longitude,
 		String note, 
 		String guardianName,
 		String guardianPhone,
@@ -47,6 +49,8 @@ public record SeniorDetailResponseDto(
             senior.getAddress().getDetail(),
             senior.getAddress().getGu().getKoreanName(),
             senior.getAddress().getDong().getKoreanName(),
+            senior.getAddress().getLatitude(),
+            senior.getAddress().getLongitude(),
             senior.getNote(),
             senior.getGuardian().getGuardianName(),
             senior.getGuardian().getGuardianPhone(),

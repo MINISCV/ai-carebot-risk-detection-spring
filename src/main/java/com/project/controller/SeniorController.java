@@ -76,7 +76,7 @@ public class SeniorController {
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<SeniorResponseDto> updateSenior(
             @PathVariable Long id, 
-            @RequestPart("senior") SeniorRequestDto seniorDto,
+            @Valid @RequestPart("senior") SeniorRequestDto seniorDto,
             @RequestPart(value = "photo", required = false) MultipartFile photo) {
     	SeniorResponseDto senior = seniorService.updateSenior(id, seniorDto, photo);
         return ResponseEntity.ok(senior);
